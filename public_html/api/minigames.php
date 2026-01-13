@@ -70,6 +70,38 @@ if ($game === 'coin') {
         'index' => $index,
         'multiplier' => $multiplier,
     ];
+} elseif ($game === 'dice') {
+    $pick = (int) ($input['pick'] ?? 1);
+    if ($pick < 1 || $pick > 6) {
+        json_response(['error' => 'Некорректный выбор.'], 400);
+    }
+    $roll = random_int(1, 6);
+    $multiplier = $pick === $roll ? 6 : 0;
+    $win = $bet * $multiplier;
+    $meta = ['pick' => $pick, 'roll' => $roll, 'multiplier' => $multiplier];
+} elseif ($game === 'highlow') {
+    $pick = $input['pick'] ?? 'high';
+    if (!in_array($pick, ['high', 'low'], true)) {
+        json_response(['error' => 'Некорректный выбор.'], 400);
+    }
+    $value = random_int(1, 13);
+    $suits = ['hearts', 'spades', 'diamonds', 'clubs'];
+    $suit = $suits[random_int(0, count($suits) - 1)];
+    $isHigh = $value >= 8;
+    $isLow = $value <= 6;
+    if ($value === 7) {
+        $multiplier = 1;
+    } else {
+        $multiplier = ($pick === 'high' && $isHigh) || ($pick === 'low' && $isLow) ? 2 : 0;
+    }
+    $win = $bet * $multiplier;
+    $meta = [
+        'pick' => $pick,
+        'value' => $value,
+        'suit' => $suit,
+        'multiplier' => $multiplier,
+        'outcome' => $value === 7 ? 'push' : ($multiplier > 0 ? 'win' : 'lose'),
+    ];
 } else {
     json_response(['error' => 'Неизвестная игра.'], 400);
 }

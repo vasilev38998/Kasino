@@ -269,6 +269,79 @@ a {
     border: 1px solid rgba(0, 240, 255, 0.15);
 }
 
+.minigame-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+
+.minigame-icon::before {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    border-radius: 12px;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.2));
+    opacity: 0.6;
+}
+
+.minigame-icon.coin {
+    background: radial-gradient(circle at 30% 30%, #f5c542, #b47b1f);
+}
+
+.minigame-icon.coin::after {
+    content: '₽';
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: #1d1d2a;
+}
+
+.minigame-icon.plinko {
+    background: linear-gradient(145deg, #6ad3ff, #2b3cff);
+}
+
+.minigame-icon.plinko::after {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    border-radius: 50%;
+    border: 3px dashed rgba(255, 255, 255, 0.7);
+}
+
+.minigame-icon.dice {
+    background: linear-gradient(160deg, #ffffff, #cfd8ff);
+}
+
+.minigame-icon.dice::after {
+    content: '';
+    position: absolute;
+    inset: 16px;
+    border-radius: 10px;
+    background: radial-gradient(circle at 30% 30%, #1d1d2a 16%, transparent 18%),
+        radial-gradient(circle at 70% 70%, #1d1d2a 16%, transparent 18%);
+}
+
+.minigame-icon.highlow {
+    background: linear-gradient(145deg, #ff7bd9, #7b6bff);
+}
+
+.minigame-icon.highlow::after {
+    content: 'A';
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: #fff;
+}
+
 .minigame-layout {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
@@ -312,6 +385,26 @@ a {
     backface-visibility: hidden;
     background: radial-gradient(circle at 30% 30%, #f5c542, #b47b1f);
     color: #1d1d2a;
+    box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.15), inset 0 0 18px rgba(0, 0, 0, 0.4);
+}
+
+.coin-face::before {
+    content: '';
+    position: absolute;
+    inset: 16px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+.coin-face::after {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    top: 12%;
+    left: 12%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.6), transparent 60%);
 }
 
 .coin-back {
@@ -332,6 +425,116 @@ a {
     align-items: center;
     justify-content: center;
     gap: 12px;
+}
+
+.dice-panel,
+.highlow-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    min-height: 320px;
+}
+
+.dice-display {
+    width: 160px;
+    height: 160px;
+    border-radius: 24px;
+    background: linear-gradient(145deg, #fdfdfd, #cfd8ff);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 6px;
+    padding: 14px;
+    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.4), 0 20px 32px rgba(0, 0, 0, 0.35);
+}
+
+.dice-display .pip {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #1d1d2a;
+    opacity: 0.1;
+    justify-self: center;
+    align-self: center;
+}
+
+.dice-display[data-value='1'] .pip:nth-child(5),
+.dice-display[data-value='2'] .pip:nth-child(1),
+.dice-display[data-value='2'] .pip:nth-child(9),
+.dice-display[data-value='3'] .pip:nth-child(1),
+.dice-display[data-value='3'] .pip:nth-child(5),
+.dice-display[data-value='3'] .pip:nth-child(9),
+.dice-display[data-value='4'] .pip:nth-child(1),
+.dice-display[data-value='4'] .pip:nth-child(3),
+.dice-display[data-value='4'] .pip:nth-child(7),
+.dice-display[data-value='4'] .pip:nth-child(9),
+.dice-display[data-value='5'] .pip:nth-child(1),
+.dice-display[data-value='5'] .pip:nth-child(3),
+.dice-display[data-value='5'] .pip:nth-child(5),
+.dice-display[data-value='5'] .pip:nth-child(7),
+.dice-display[data-value='5'] .pip:nth-child(9),
+.dice-display[data-value='6'] .pip:nth-child(1),
+.dice-display[data-value='6'] .pip:nth-child(3),
+.dice-display[data-value='6'] .pip:nth-child(4),
+.dice-display[data-value='6'] .pip:nth-child(6),
+.dice-display[data-value='6'] .pip:nth-child(7),
+.dice-display[data-value='6'] .pip:nth-child(9) {
+    opacity: 1;
+}
+
+.dice-result,
+.highlow-result {
+    color: var(--muted);
+}
+
+.card-display {
+    width: 180px;
+    height: 240px;
+    border-radius: 18px;
+    background: linear-gradient(160deg, #fdfdfd, #e7ecff);
+    color: #1d1d2a;
+    position: relative;
+    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.4), 0 20px 32px rgba(0, 0, 0, 0.35);
+}
+
+.card-display[data-suit='hearts'],
+.card-display[data-suit='diamonds'] {
+    color: #d13c3c;
+}
+
+.card-display[data-suit='spades'],
+.card-display[data-suit='clubs'] {
+    color: #1d1d2a;
+}
+
+.card-corner {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-weight: 700;
+}
+
+.card-corner.top {
+    top: 12px;
+    left: 14px;
+}
+
+.card-corner.bottom {
+    bottom: 12px;
+    right: 14px;
+    transform: rotate(180deg);
+}
+
+.card-center {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 64px;
+    opacity: 0.8;
 }
 
 .plinko-canvas {
