@@ -930,8 +930,9 @@ a {
 
 .slot-stage {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
     gap: 20px;
+    align-items: start;
 }
 
 .slot-canvas {
@@ -939,6 +940,12 @@ a {
     overflow: hidden;
     position: relative;
     min-height: 360px;
+}
+
+.slot-field {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .slot-canvas::after {
@@ -1041,6 +1048,18 @@ a {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.slot-hints {
+    display: none;
+}
+
+.slot-hints.is-open {
+    display: block;
+}
+
+.slot-hints-toggle {
+    width: fit-content;
 }
 
 .theme-sky .slot-controls {

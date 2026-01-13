@@ -84,6 +84,8 @@ if (slotPanel) {
     const canvas = document.querySelector('.slot-reels');
     const statusEl = document.querySelector('.slot-status');
     const winEl = document.querySelector('.slot-win');
+    const hintsToggle = document.querySelector('[data-slot-hints-toggle]');
+    const hintsPanel = document.querySelector('[data-slot-hints]');
     const theme = document.querySelector('[data-slot-theme]')?.dataset.slotTheme || 'aurora';
     const ctx = canvas?.getContext('2d');
     let spinning = false;
@@ -511,6 +513,9 @@ if (slotPanel) {
     window.addEventListener('resize', () => {
         resizeCanvas();
         drawGrid(idleGrid);
+    });
+    hintsToggle?.addEventListener('click', () => {
+        hintsPanel?.classList.toggle('is-open');
     });
 
     const randomSymbol = () => {

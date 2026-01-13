@@ -24,19 +24,15 @@ $labels = $current['symbol_labels'] ?? [];
         <img src="<?php echo $current['icon']; ?>" alt="<?php echo $current['name']; ?>" class="slot-icon">
     </div>
     <div class="slot-stage">
-        <div class="slot-canvas card slot-panel" data-slot-game="<?php echo $current['slug']; ?>" data-cols="<?php echo $current['cols']; ?>" data-rows="<?php echo $current['rows']; ?>">
-            <canvas class="slot-reels" width="720" height="420"></canvas>
-        </div>
-        <div class="slot-overlay">
-            <div class="slot-status">Готов к спину</div>
-            <div class="slot-win">0₽</div>
-        </div>
         <div class="card slot-controls">
             <div class="slot-info">
                 <span class="badge"><?php echo $current['mechanic']; ?></span>
                 <span class="badge">Бонус: 3+ scatter</span>
             </div>
-            <div class="slot-hints">
+            <button class="btn ghost slot-hints-toggle" type="button" data-slot-hints-toggle>
+                Комбинации и выплаты
+            </button>
+            <div class="slot-hints" data-slot-hints>
                 <strong>Комбо и выплаты</strong>
                 <ul>
                     <?php $symbolList = implode(', ', array_values($labels)); ?>
@@ -86,6 +82,15 @@ $labels = $current['symbol_labels'] ?? [];
             <div class="slot-result">
                 <strong>Результат</strong>
                 <p class="slot-result-text">Ожидание спина...</p>
+            </div>
+        </div>
+        <div class="slot-field">
+            <div class="slot-canvas card slot-panel" data-slot-game="<?php echo $current['slug']; ?>" data-cols="<?php echo $current['cols']; ?>" data-rows="<?php echo $current['rows']; ?>">
+                <canvas class="slot-reels" width="720" height="420"></canvas>
+            </div>
+            <div class="slot-overlay">
+                <div class="slot-status">Готов к спину</div>
+                <div class="slot-win">0₽</div>
             </div>
         </div>
     </div>
