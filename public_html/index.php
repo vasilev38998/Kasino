@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/helpers.php';
 render_header('Kasino Lux');
+$user = current_user();
 $slots = slots_catalog();
 $config = require __DIR__ . '/config.php';
 $heroSlots = array_slice($slots, 0, 4);
@@ -11,8 +12,13 @@ $heroSlots = array_slice($slots, 0, 4);
         <h1><?php echo t('hero_title'); ?></h1>
         <p><?php echo t('hero_subtitle'); ?></p>
         <div class="hero-actions">
-            <a class="btn" href="/slots.php"><?php echo t('cta_play'); ?></a>
-            <a class="btn ghost" href="/register.php"><?php echo t('cta_register'); ?></a>
+            <?php if ($user): ?>
+                <a class="btn" href="/slots.php"><?php echo t('cta_play'); ?></a>
+                <a class="btn ghost" href="/profile.php"><?php echo t('nav_profile'); ?></a>
+            <?php else: ?>
+                <a class="btn" href="/register.php"><?php echo t('cta_register'); ?></a>
+                <a class="btn ghost" href="/login.php"><?php echo t('nav_login'); ?></a>
+            <?php endif; ?>
             <button class="btn ghost" data-install hidden>Установить PWA</button>
         </div>
         <div class="hero-stats">
@@ -31,8 +37,13 @@ $heroSlots = array_slice($slots, 0, 4);
         </div>
     </div>
     <div class="hero-card">
-        <div class="badge"><?php echo t('balance'); ?>: <span data-balance>0₽</span></div>
-        <p>RTP Live: 96.4% • Volatility: High</p>
+        <?php if ($user): ?>
+            <div class="badge"><?php echo t('balance'); ?>: <span data-balance>0₽</span></div>
+            <p>RTP Live: 96.4% • Volatility: High</p>
+        <?php else: ?>
+            <div class="badge">Гость</div>
+            <p>Зарегистрируйтесь, чтобы видеть баланс, бонусы и персональные предложения.</p>
+        <?php endif; ?>
         <div class="hero-grid">
             <?php foreach ($heroSlots as $slot): ?>
                 <div class="hero-slot">
@@ -44,6 +55,11 @@ $heroSlots = array_slice($slots, 0, 4);
                 </div>
             <?php endforeach; ?>
         </div>
+        <?php if (!$user): ?>
+            <div class="hero-cta">
+                <a class="btn" href="/register.php"><?php echo t('cta_register'); ?></a>
+            </div>
+        <?php endif; ?>
     </div>
 </section>
 <section class="section">

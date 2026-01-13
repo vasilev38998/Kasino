@@ -29,8 +29,27 @@ if ($game === 'coin') {
     $win = $choice === $result ? $bet * 2 : 0;
     $meta = ['choice' => $choice, 'result' => $result];
 } elseif ($game === 'plinko') {
-    $multipliers = [0, 0.5, 1, 1.5, 2, 3, 5];
-    $weights = [8, 12, 18, 20, 18, 12, 6];
+    $difficulty = $input['difficulty'] ?? 'easy';
+    $plinkoConfigs = [
+        'easy' => [
+            'rows' => 6,
+            'multipliers' => [0.5, 1, 1.5, 2, 1.5, 1, 0.5],
+            'weights' => [10, 14, 18, 22, 18, 14, 10],
+        ],
+        'medium' => [
+            'rows' => 8,
+            'multipliers' => [0, 0.5, 1, 1.5, 2, 3, 2, 1.5, 1, 0.5, 0],
+            'weights' => [8, 10, 14, 18, 20, 24, 20, 18, 14, 10, 8],
+        ],
+        'hard' => [
+            'rows' => 10,
+            'multipliers' => [0, 0.2, 0.5, 1, 1.5, 2, 3, 5, 3, 2, 1.5, 1, 0.5, 0.2, 0],
+            'weights' => [6, 8, 10, 14, 18, 22, 24, 20, 24, 22, 18, 14, 10, 8, 6],
+        ],
+    ];
+    $plinkoConfig = $plinkoConfigs[$difficulty] ?? $plinkoConfigs['easy'];
+    $multipliers = $plinkoConfig['multipliers'];
+    $weights = $plinkoConfig['weights'];
     $total = array_sum($weights);
     $pick = random_int(1, $total);
     $current = 0;
@@ -44,7 +63,13 @@ if ($game === 'coin') {
     }
     $multiplier = $multipliers[$index];
     $win = $bet * $multiplier;
-    $meta = ['multiplier' => $multiplier];
+    $meta = [
+        'difficulty' => $difficulty,
+        'rows' => $plinkoConfig['rows'],
+        'multipliers' => $multipliers,
+        'index' => $index,
+        'multiplier' => $multiplier,
+    ];
 } else {
     json_response(['error' => 'Неизвестная игра.'], 400);
 }

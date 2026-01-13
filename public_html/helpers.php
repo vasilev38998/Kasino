@@ -163,6 +163,10 @@ function render_header(string $title): void
     echo "<a href=\"/leaderboard.php\">" . t('nav_leaderboard') . "</a>\n";
     if (current_user()) {
         echo "<a href=\"/notifications.php\">" . t('nav_notifications') . "</a>\n";
+        echo "<a href=\"/wallet.php\">" . t('nav_wallet') . "</a>\n";
+    } else {
+        echo "<a href=\"/login.php\">" . t('nav_login') . "</a>\n";
+        echo "<a href=\"/register.php\">" . t('nav_register') . "</a>\n";
     }
     echo "<a href=\"/minigames.php\">" . t('nav_minigames') . "</a>\n";
     echo "<a href=\"/support.php\">" . t('nav_support') . "</a>\n";

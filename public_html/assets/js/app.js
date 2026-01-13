@@ -293,8 +293,59 @@ minigameButtons.forEach((btn) => {
             const canvas = wrapper?.querySelector('.plinko-canvas');
             const resultEl = wrapper?.querySelector('[data-plinko-result]');
             const resultLabel = wrapper?.dataset.plinkoLabel || 'Множитель';
+            const slotsEl = wrapper?.querySelector('[data-plinko-slots]');
+            const difficultyInputs = wrapper?.querySelectorAll('input[name="plinko_difficulty"]');
             const ctx = canvas?.getContext('2d');
-            const drawBoard = () => {
+            const plinkoConfigs = {
+                easy: { rows: 6, multipliers: [0.5, 1, 1.5, 2, 1.5, 1, 0.5] },
+                medium: { rows: 8, multipliers: [0, 0.5, 1, 1.5, 2, 3, 2, 1.5, 1, 0.5, 0] },
+                hard: { rows: 10, multipliers: [0, 0.2, 0.5, 1, 1.5, 2, 3, 5, 3, 2, 1.5, 1, 0.5, 0.2, 0] },
+            };
+            let pegLayout = [];
+            let slotLayout = [];
+            const getDifficulty = () =>
+                wrapper?.querySelector('input[name="plinko_difficulty"]:checked')?.value || 'easy';
+            const renderSlots = (multipliers, activeIndex = null) => {
+                if (!slotsEl) return;
+                slotsEl.innerHTML = '';
+                multipliers.forEach((value, index) => {
+                    const slot = document.createElement('span');
+                    slot.className = 'plinko-slot';
+                    slot.textContent = `x${value}`;
+                    if (activeIndex === index) {
+                        slot.classList.add('active');
+                    }
+                    slotsEl.appendChild(slot);
+                });
+            };
+            const buildLayout = (rows, width, height) => {
+                const pegs = [];
+                const topOffset = 70;
+                const usableHeight = height - topOffset - 60;
+                const rowGap = usableHeight / rows;
+                for (let row = 0; row < rows; row++) {
+                    const count = row + 1;
+                    const gap = width / (count + 1);
+                    for (let col = 0; col < count; col++) {
+                        pegs.push({
+                            x: gap * (col + 1),
+                            y: topOffset + rowGap * row,
+                        });
+                    }
+                }
+                const slots = [];
+                const slotCount = rows + 1;
+                const slotGap = width / slotCount;
+                for (let i = 0; i < slotCount; i++) {
+                    slots.push({
+                        x: slotGap * i,
+                        width: slotGap,
+                        center: slotGap * i + slotGap / 2,
+                    });
+                }
+                return { pegs, slots };
+            };
+            const drawBoard = (activeIndex = null) => {
                 if (!ctx || !canvas) return;
                 const width = canvas.clientWidth || canvas.width;
                 const height = canvas.clientHeight || canvas.height;
@@ -302,17 +353,17 @@ minigameButtons.forEach((btn) => {
                 ctx.fillStyle = '#0f0f22';
                 ctx.fillRect(0, 0, width, height);
                 ctx.fillStyle = '#f5c542';
-                const rowGap = height / 8;
-                const colGap = width / 8;
-                for (let row = 0; row < 6; row++) {
-                    for (let col = 0; col <= row; col++) {
-                        const x = width / 2 - row * colGap * 0.5 + col * colGap;
-                        const y = 60 + row * rowGap;
-                        ctx.beginPath();
-                        ctx.arc(x, y, 6, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                }
+                pegLayout.forEach((peg) => {
+                    ctx.beginPath();
+                    ctx.arc(peg.x, peg.y, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+                slotLayout.forEach((slot, index) => {
+                    ctx.lineWidth = activeIndex === index ? 2 : 1;
+                    ctx.strokeStyle = activeIndex === index ? '#f5c542' : 'rgba(255,255,255,0.08)';
+                    ctx.strokeRect(slot.x + 4, height - 46, slot.width - 8, 36);
+                });
             };
             const ensureSize = () => {
                 if (!canvas) return;
@@ -325,11 +376,26 @@ minigameButtons.forEach((btn) => {
                 }
             };
             ensureSize();
-            drawBoard();
+            const updateBoard = () => {
+                const config = plinkoConfigs[getDifficulty()] || plinkoConfigs.easy;
+                const width = canvas?.clientWidth || canvas?.width || 420;
+                const height = canvas?.clientHeight || canvas?.height || 520;
+                const layout = buildLayout(config.rows, width, height);
+                pegLayout = layout.pegs;
+                slotLayout = layout.slots;
+                renderSlots(config.multipliers);
+                drawBoard();
+            };
+            updateBoard();
+            difficultyInputs?.forEach((input) => {
+                input.addEventListener('change', () => {
+                    updateBoard();
+                });
+            });
             fetch('/api/minigames.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ game: 'plinko', bet }),
+                body: JSON.stringify({ game: 'plinko', bet, difficulty: getDifficulty() }),
             })
                 .then((res) => res.json())
                 .then((data) => {
@@ -337,19 +403,62 @@ minigameButtons.forEach((btn) => {
                         resultEl.textContent = data.error;
                         return;
                     }
-                    let y = 40;
+                    const multipliers = data.meta?.multipliers || [];
+                    const targetIndex = Number(data.meta?.index ?? 0);
+                    const slotIndex = Number.isNaN(targetIndex) ? 0 : targetIndex;
+                    const targetSlot = slotLayout[slotIndex];
+                    if (multipliers.length) {
+                        renderSlots(multipliers, slotIndex);
+                    } else {
+                        renderSlots(
+                            plinkoConfigs[getDifficulty()]?.multipliers || plinkoConfigs.easy.multipliers,
+                            slotIndex
+                        );
+                    }
                     let x = (canvas?.clientWidth || canvas.width) / 2;
-                    const target = x + (Math.random() - 0.5) * 180;
+                    let y = 30;
+                    let vx = (Math.random() - 0.5) * 2;
+                    let vy = 0;
+                    const ballRadius = 10;
+                    const pegRadius = 6;
+                    const gravity = 0.45;
+                    const bounce = 0.75;
+                    const targetX = targetSlot?.center ?? x;
                     const animate = () => {
                         if (!ctx || !canvas) return;
-                        drawBoard();
-                        y += 12;
-                        x += (target - x) * 0.08;
+                        vy += gravity;
+                        x += vx;
+                        y += vy;
+                        if (x < ballRadius || x > canvas.width - ballRadius) {
+                            vx *= -0.6;
+                            x = Math.min(Math.max(x, ballRadius), canvas.width - ballRadius);
+                        }
+                        pegLayout.forEach((peg) => {
+                            const dx = x - peg.x;
+                            const dy = y - peg.y;
+                            const dist = Math.hypot(dx, dy);
+                            if (dist > 0 && dist < ballRadius + pegRadius) {
+                                const nx = dx / dist;
+                                const ny = dy / dist;
+                                const overlap = ballRadius + pegRadius - dist;
+                                x += nx * overlap;
+                                y += ny * overlap;
+                                const dot = vx * nx + vy * ny;
+                                vx -= 2 * dot * nx;
+                                vy -= 2 * dot * ny;
+                                vx *= bounce;
+                                vy *= bounce;
+                            }
+                        });
+                        if (y > canvas.height - 140) {
+                            vx += (targetX - x) * 0.002;
+                        }
+                        drawBoard(slotIndex);
                         ctx.fillStyle = '#00f0ff';
                         ctx.beginPath();
                         ctx.arc(x, y, 10, 0, Math.PI * 2);
                         ctx.fill();
-                        if (y < canvas.height - 40) {
+                        if (y < canvas.height - 60) {
                             requestAnimationFrame(animate);
                         } else {
                             const multiplier = data.meta?.multiplier ?? 0;
