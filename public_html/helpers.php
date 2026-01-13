@@ -137,10 +137,25 @@ function json_response(array $data, int $status = 200): void
     exit;
 }
 
+function site_setting(string $name, string $default = ''): string
+{
+    static $cache = [];
+    if (array_key_exists($name, $cache)) {
+        return $cache[$name];
+    }
+    $stmt = db()->prepare('SELECT value FROM settings WHERE name = ?');
+    $stmt->execute([$name]);
+    $row = $stmt->fetch();
+    $value = $row ? (string) $row['value'] : $default;
+    $cache[$name] = $value;
+    return $value;
+}
+
 function render_header(string $title): void
 {
     $config = require __DIR__ . '/config.php';
     $language = lang();
+    $authed = current_user() ? '1' : '0';
     echo "<!doctype html>\n";
     echo "<html lang=\"{$language}\">\n";
     echo "<head>\n";
@@ -152,7 +167,7 @@ function render_header(string $title): void
     echo "<script defer src=\"/assets/js/app.js\"></script>\n";
     echo "<title>{$title}</title>\n";
     echo "</head>\n";
-    echo "<body>\n";
+    echo "<body data-auth=\"{$authed}\">\n";
     echo "<div class=\"app\">\n";
     echo "<header class=\"topbar\">\n";
     echo "<div class=\"logo\">Kasino <span>Lux</span></div>\n";

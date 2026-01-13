@@ -3,12 +3,12 @@ require __DIR__ . '/helpers.php';
 render_header(t('missions_title'));
 ?>
 <section class="section">
-    <h2><?php echo t('missions_title'); ?></h2>
-    <p class="muted"><?php echo t('missions_subtitle'); ?></p>
+    <h2><?php echo site_setting('missions_title', t('missions_title')); ?></h2>
+    <p class="muted"><?php echo site_setting('missions_subtitle', t('missions_subtitle')); ?></p>
     <div class="cards missions-grid">
         <div class="card mission-card">
-            <strong><?php echo t('mission_daily_spin'); ?></strong>
-            <p><?php echo t('mission_daily_spin_desc'); ?></p>
+            <strong><?php echo site_setting('mission_daily_spin', t('mission_daily_spin')); ?></strong>
+            <p><?php echo site_setting('mission_daily_spin_desc', t('mission_daily_spin_desc')); ?></p>
             <div class="progress">
                 <div class="progress-bar" style="width: 40%"></div>
             </div>
@@ -18,8 +18,8 @@ render_header(t('missions_title'));
             </div>
         </div>
         <div class="card mission-card">
-            <strong><?php echo t('mission_weekly_slots'); ?></strong>
-            <p><?php echo t('mission_weekly_slots_desc'); ?></p>
+            <strong><?php echo site_setting('mission_weekly_slots', t('mission_weekly_slots')); ?></strong>
+            <p><?php echo site_setting('mission_weekly_slots_desc', t('mission_weekly_slots_desc')); ?></p>
             <div class="progress">
                 <div class="progress-bar" style="width: 65%"></div>
             </div>
@@ -29,8 +29,8 @@ render_header(t('missions_title'));
             </div>
         </div>
         <div class="card mission-card">
-            <strong><?php echo t('mission_minigame'); ?></strong>
-            <p><?php echo t('mission_minigame_desc'); ?></p>
+            <strong><?php echo site_setting('mission_minigame', t('mission_minigame')); ?></strong>
+            <p><?php echo site_setting('mission_minigame_desc', t('mission_minigame_desc')); ?></p>
             <div class="progress">
                 <div class="progress-bar" style="width: 20%"></div>
             </div>
@@ -42,11 +42,11 @@ render_header(t('missions_title'));
     </div>
 </section>
 <section class="section">
-    <h2><?php echo t('referral_title'); ?></h2>
+    <h2><?php echo site_setting('referral_title', t('referral_title')); ?></h2>
     <div class="card referral-card">
         <div>
-            <strong><?php echo t('referral_reward'); ?></strong>
-            <p class="muted"><?php echo t('referral_desc'); ?></p>
+            <strong><?php echo site_setting('referral_reward', t('referral_reward')); ?></strong>
+            <p class="muted"><?php echo site_setting('referral_desc', t('referral_desc')); ?></p>
         </div>
         <div class="referral-code">
             <span>VIP-7KX9</span>

@@ -9,8 +9,8 @@ $heroSlots = array_slice($slots, 0, 4);
 <section class="hero hero-glow">
     <div>
         <div class="hero-badge">Kasino Lux • VIP Club</div>
-        <h1><?php echo t('hero_title'); ?></h1>
-        <p><?php echo t('hero_subtitle'); ?></p>
+        <h1><?php echo site_setting('hero_title', t('hero_title')); ?></h1>
+        <p><?php echo site_setting('hero_subtitle', t('hero_subtitle')); ?></p>
         <div class="hero-actions">
             <?php if ($user): ?>
                 <a class="btn" href="/slots.php"><?php echo t('cta_play'); ?></a>
@@ -105,25 +105,25 @@ $heroSlots = array_slice($slots, 0, 4);
     <div class="grid-two">
         <div class="card">
             <strong><?php echo t('bonus_daily'); ?></strong>
-            <p>Забирайте награду каждые 24 часа.</p>
+            <p><?php echo site_setting('bonus_daily_text', 'Забирайте награду каждые 24 часа.'); ?></p>
         </div>
         <div class="card">
             <strong><?php echo t('bonus_welcome'); ?></strong>
-            <p>До 500₽ + вейджер 20x.</p>
+            <p><?php echo site_setting('bonus_welcome_text', 'До 500₽ + вейджер 20x.'); ?></p>
         </div>
         <div class="card">
             <strong><?php echo t('bonus_cashback'); ?></strong>
-            <p>Возврат до 5% каждую неделю.</p>
+            <p><?php echo site_setting('bonus_cashback_text', 'Возврат до 5% каждую неделю.'); ?></p>
         </div>
     </div>
 </section>
 <section class="section">
-    <h2><?php echo t('missions_title'); ?></h2>
-    <p class="muted"><?php echo t('missions_subtitle'); ?></p>
+    <h2><?php echo site_setting('missions_title', t('missions_title')); ?></h2>
+    <p class="muted"><?php echo site_setting('missions_subtitle', t('missions_subtitle')); ?></p>
     <div class="cards missions-grid">
         <div class="card mission-card">
-            <strong><?php echo t('mission_daily_spin'); ?></strong>
-            <p><?php echo t('mission_daily_spin_desc'); ?></p>
+            <strong><?php echo site_setting('mission_daily_spin', t('mission_daily_spin')); ?></strong>
+            <p><?php echo site_setting('mission_daily_spin_desc', t('mission_daily_spin_desc')); ?></p>
             <div class="progress">
                 <div class="progress-bar" style="width: 45%"></div>
             </div>
@@ -133,8 +133,8 @@ $heroSlots = array_slice($slots, 0, 4);
             </div>
         </div>
         <div class="card mission-card">
-            <strong><?php echo t('mission_weekly_slots'); ?></strong>
-            <p><?php echo t('mission_weekly_slots_desc'); ?></p>
+            <strong><?php echo site_setting('mission_weekly_slots', t('mission_weekly_slots')); ?></strong>
+            <p><?php echo site_setting('mission_weekly_slots_desc', t('mission_weekly_slots_desc')); ?></p>
             <div class="progress">
                 <div class="progress-bar" style="width: 70%"></div>
             </div>
@@ -144,8 +144,8 @@ $heroSlots = array_slice($slots, 0, 4);
             </div>
         </div>
         <div class="card mission-card">
-            <strong><?php echo t('mission_minigame'); ?></strong>
-            <p><?php echo t('mission_minigame_desc'); ?></p>
+            <strong><?php echo site_setting('mission_minigame', t('mission_minigame')); ?></strong>
+            <p><?php echo site_setting('mission_minigame_desc', t('mission_minigame_desc')); ?></p>
             <div class="progress">
                 <div class="progress-bar" style="width: 30%"></div>
             </div>

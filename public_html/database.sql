@@ -167,7 +167,31 @@ CREATE TABLE settings (
 
 INSERT INTO settings (name, value) VALUES
 ('terms', 'Правила использования и условия виртуальной валюты.'),
-('privacy', 'Политика конфиденциальности.');
+('privacy', 'Политика конфиденциальности.'),
+('hero_title', 'Премиальный неон-казино клуб'),
+('hero_subtitle', 'Играй в топовые слоты, получай бонусы и наслаждайся атмосферой роскоши.'),
+('bonus_daily_text', 'Забирайте награду каждые 24 часа.'),
+('bonus_welcome_text', 'До 500₽ + вейджер 20x.'),
+('bonus_cashback_text', 'Возврат до 5% каждую неделю.'),
+('missions_title', 'Миссии и квесты'),
+('missions_subtitle', 'Выполняйте задания и получайте награды каждый день.'),
+('mission_daily_spin', 'Дневные спины'),
+('mission_daily_spin_desc', 'Сделайте серию спинов и заберите награду.'),
+('mission_weekly_slots', 'Недельный слот-рывок'),
+('mission_weekly_slots_desc', 'Проведите 20 спинов в любых слотах.'),
+('mission_minigame', 'Мини-турнир'),
+('mission_minigame_desc', 'Сыграйте 5 мини-игр без перерыва.'),
+('referral_title', 'Реферальная программа'),
+('referral_reward', 'Пригласите друзей и получайте бонусы'),
+('referral_desc', 'За каждого друга — +100₽ и 10 фриспинов.'),
+('promotions_title', 'Акции и турниры'),
+('promo_vip_title', 'VIP-турнир недели'),
+('promo_vip_desc', 'Наберите максимум выигрышей и делите фонд.'),
+('promo_streak_title', 'Серия побед'),
+('promo_streak_desc', 'Соберите 10 выигрышных спинов подряд.'),
+('promo_codes_title', 'Промокоды недели'),
+('promo_codes_desc', 'Активируйте промокоды для бонусов.'),
+('promo_codes_list', 'LUX100, NEON50, WEEKEND');
 
 INSERT INTO staff_users (email, password_hash, role) VALUES
 ('admin@kasino.local', '$2y$12$UrP0yDk6/P62gYE3vAqfbecDkebaAutmKbie3U1yGPz6xups6elX2', 'admin');

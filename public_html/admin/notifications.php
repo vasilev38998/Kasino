@@ -25,6 +25,7 @@ admin_header('Уведомления');
             <option value="info">info</option>
             <option value="bonus">bonus</option>
             <option value="win">win</option>
+            <option value="push">push</option>
         </select>
         <button class="btn" type="submit">Отправить</button>
     </form>
