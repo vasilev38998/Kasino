@@ -164,6 +164,7 @@ function render_header(string $title): void
     if (current_user()) {
         echo "<a href=\"/notifications.php\">" . t('nav_notifications') . "</a>\n";
     }
+    echo "<a href=\"/minigames.php\">" . t('nav_minigames') . "</a>\n";
     echo "<a href=\"/support.php\">" . t('nav_support') . "</a>\n";
     echo "</nav>\n";
     echo "<div class=\"topbar-actions\">\n";

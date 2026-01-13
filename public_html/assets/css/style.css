@@ -256,6 +256,95 @@ a {
     background: linear-gradient(145deg, rgba(18, 18, 37, 0.9), rgba(24, 24, 48, 0.9));
 }
 
+.minigames-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.minigame-card {
+    background: linear-gradient(145deg, rgba(18, 18, 37, 0.9), rgba(30, 30, 58, 0.9));
+    border: 1px solid rgba(0, 240, 255, 0.15);
+}
+
+.minigame-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+    gap: 20px;
+}
+
+.minigame-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.coin-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+}
+
+.coin-display {
+    width: 160px;
+    height: 160px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s ease;
+}
+
+.coin-display.flip {
+    transform: rotateY(180deg);
+}
+
+.coin-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: 700;
+    backface-visibility: hidden;
+    background: radial-gradient(circle at 30% 30%, #f5c542, #b47b1f);
+    color: #1d1d2a;
+}
+
+.coin-back {
+    transform: rotateY(180deg);
+    background: radial-gradient(circle at 30% 30%, #6ad3ff, #2b3cff);
+    color: #ffffff;
+}
+
+.coin-result,
+.plinko-result {
+    margin-top: 16px;
+    color: var(--muted);
+}
+
+.plinko-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.plinko-canvas {
+    width: 100%;
+    max-width: 420px;
+    height: 520px;
+    border-radius: 18px;
+    background: linear-gradient(160deg, #0f0f22, #1b2246);
+}
+
+.plinko-multipliers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
 .tabs {
     display: flex;
     gap: 12px;
@@ -625,5 +714,11 @@ input:focus, textarea:focus, select:focus {
     }
     .hero {
         padding-top: 60px;
+    }
+    .minigame-layout {
+        grid-template-columns: 1fr;
+    }
+    .plinko-canvas {
+        height: 380px;
     }
 }

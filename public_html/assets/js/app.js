@@ -249,6 +249,113 @@ document.querySelectorAll('.social-bind').forEach((form) => {
     });
 });
 
+const minigameButtons = document.querySelectorAll('.minigame-play');
+minigameButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const wrapper = btn.closest('.minigame-layout');
+        const betInput = wrapper?.querySelector('.minigame-bet');
+        const bet = Number(betInput?.value || 0);
+        const game = btn.dataset.minigame;
+        if (game === 'coin') {
+            const choice = wrapper?.querySelector('.minigame-side')?.value || 'heads';
+            const coinDisplay = wrapper?.querySelector('[data-coin-display]');
+            const coinResult = wrapper?.querySelector('[data-coin-result]');
+            const winLabel = wrapper?.dataset.coinWin || 'Победа';
+            const loseLabel = wrapper?.dataset.coinLose || 'Проигрыш';
+            const headsLabel = wrapper?.dataset.heads || 'Орёл';
+            const tailsLabel = wrapper?.dataset.tails || 'Решка';
+            coinDisplay?.classList.remove('flip');
+            fetch('/api/minigames.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'coin', bet, choice }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.error) {
+                        coinResult.textContent = data.error;
+                        return;
+                    }
+                    coinDisplay?.classList.add('flip');
+                    const win = Number(data.win || 0);
+                    const result = data.meta?.result === 'heads' ? headsLabel : tailsLabel;
+                    coinResult.textContent = win > 0 ? `${winLabel}: ${win}₽ (${result})` : `${loseLabel} (${result})`;
+                });
+        }
+        if (game === 'plinko') {
+            const canvas = wrapper?.querySelector('.plinko-canvas');
+            const resultEl = wrapper?.querySelector('[data-plinko-result]');
+            const resultLabel = wrapper?.dataset.plinkoLabel || 'Множитель';
+            const ctx = canvas?.getContext('2d');
+            const drawBoard = () => {
+                if (!ctx || !canvas) return;
+                const width = canvas.clientWidth || canvas.width;
+                const height = canvas.clientHeight || canvas.height;
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = '#0f0f22';
+                ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = '#f5c542';
+                const rowGap = height / 8;
+                const colGap = width / 8;
+                for (let row = 0; row < 6; row++) {
+                    for (let col = 0; col <= row; col++) {
+                        const x = width / 2 - row * colGap * 0.5 + col * colGap;
+                        const y = 60 + row * rowGap;
+                        ctx.beginPath();
+                        ctx.arc(x, y, 6, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            };
+            const ensureSize = () => {
+                if (!canvas) return;
+                const rect = canvas.getBoundingClientRect();
+                const ratio = window.devicePixelRatio || 1;
+                canvas.width = rect.width * ratio;
+                canvas.height = rect.height * ratio;
+                if (ctx) {
+                    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+                }
+            };
+            ensureSize();
+            drawBoard();
+            fetch('/api/minigames.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'plinko', bet }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.error) {
+                        resultEl.textContent = data.error;
+                        return;
+                    }
+                    let y = 40;
+                    let x = (canvas?.clientWidth || canvas.width) / 2;
+                    const target = x + (Math.random() - 0.5) * 180;
+                    const animate = () => {
+                        if (!ctx || !canvas) return;
+                        drawBoard();
+                        y += 12;
+                        x += (target - x) * 0.08;
+                        ctx.fillStyle = '#00f0ff';
+                        ctx.beginPath();
+                        ctx.arc(x, y, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                        if (y < canvas.height - 40) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            const multiplier = data.meta?.multiplier ?? 0;
+                            const win = Number(data.win || 0);
+                            resultEl.textContent = `${resultLabel} x${multiplier} • Выигрыш ${win}₽`;
+                        }
+                    };
+                    animate();
+                });
+        }
+    });
+});
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js');
