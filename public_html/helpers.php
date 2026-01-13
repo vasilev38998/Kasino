@@ -161,6 +161,7 @@ function render_header(string $title): void
     echo "<a href=\"/slots.php\">" . t('nav_slots') . "</a>\n";
     echo "<a href=\"/promotions.php\">" . t('nav_promotions') . "</a>\n";
     echo "<a href=\"/leaderboard.php\">" . t('nav_leaderboard') . "</a>\n";
+    echo "<a href=\"/missions.php\">" . t('nav_missions') . "</a>\n";
     if (current_user()) {
         echo "<a href=\"/notifications.php\">" . t('nav_notifications') . "</a>\n";
         echo "<a href=\"/wallet.php\">" . t('nav_wallet') . "</a>\n";

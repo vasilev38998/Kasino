@@ -117,4 +117,43 @@ $heroSlots = array_slice($slots, 0, 4);
         </div>
     </div>
 </section>
+<section class="section">
+    <h2><?php echo t('missions_title'); ?></h2>
+    <p class="muted"><?php echo t('missions_subtitle'); ?></p>
+    <div class="cards missions-grid">
+        <div class="card mission-card">
+            <strong><?php echo t('mission_daily_spin'); ?></strong>
+            <p><?php echo t('mission_daily_spin_desc'); ?></p>
+            <div class="progress">
+                <div class="progress-bar" style="width: 45%"></div>
+            </div>
+            <div class="mission-meta">
+                <span>9 / 20</span>
+                <span>+60₽</span>
+            </div>
+        </div>
+        <div class="card mission-card">
+            <strong><?php echo t('mission_weekly_slots'); ?></strong>
+            <p><?php echo t('mission_weekly_slots_desc'); ?></p>
+            <div class="progress">
+                <div class="progress-bar" style="width: 70%"></div>
+            </div>
+            <div class="mission-meta">
+                <span>14 / 20</span>
+                <span>+250₽</span>
+            </div>
+        </div>
+        <div class="card mission-card">
+            <strong><?php echo t('mission_minigame'); ?></strong>
+            <p><?php echo t('mission_minigame_desc'); ?></p>
+            <div class="progress">
+                <div class="progress-bar" style="width: 30%"></div>
+            </div>
+            <div class="mission-meta">
+                <span>2 / 6</span>
+                <span>+120₽</span>
+            </div>
+        </div>
+    </div>
+</section>
 <?php render_footer(); ?>

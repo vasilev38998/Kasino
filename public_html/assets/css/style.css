@@ -251,6 +251,71 @@ a {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
+.missions-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.mission-card,
+.promo-card,
+.referral-card {
+    background: linear-gradient(145deg, rgba(18, 18, 37, 0.9), rgba(30, 30, 58, 0.9));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.progress {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    margin-top: 12px;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #6ad3ff, #9b6bff);
+}
+
+.mission-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.promo-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.tag {
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+}
+
+.referral-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.referral-code {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
 .vip-grid {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
