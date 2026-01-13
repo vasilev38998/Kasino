@@ -144,8 +144,10 @@ if (slotPanel) {
         });
     };
 
-    const idleGrid = Array.from({ length: 6 }, () =>
-        Array.from({ length: 5 }, () => themes[theme]?.symbols?.[0] || 'A')
+    const gridCols = Number(slotPanel.dataset.cols || 6);
+    const gridRows = Number(slotPanel.dataset.rows || 5);
+    const idleGrid = Array.from({ length: gridCols }, () =>
+        Array.from({ length: gridRows }, () => themes[theme]?.symbols?.[0] || 'A')
     );
     resizeCanvas();
     drawGrid(idleGrid);
@@ -160,13 +162,13 @@ if (slotPanel) {
     };
 
     const randomGrid = () =>
-        Array.from({ length: 6 }, () => Array.from({ length: 5 }, randomSymbol));
+        Array.from({ length: idleGrid.length }, () => Array.from({ length: idleGrid[0].length }, randomSymbol));
 
     const animateSpin = (finalGrid, onComplete) => {
         if (!ctx || !canvas) return;
         const start = performance.now();
         const duration = 900;
-        const baseOffsets = Array.from({ length: 6 }, (_, i) => 160 + i * 24);
+        const baseOffsets = Array.from({ length: finalGrid.length }, (_, i) => 160 + i * 24);
         let tempGrid = randomGrid();
         const tick = (now) => {
             const t = Math.min((now - start) / duration, 1);
@@ -179,7 +181,7 @@ if (slotPanel) {
                 drawGrid(tempGrid, offsets);
                 requestAnimationFrame(tick);
             } else {
-                drawGrid(finalGrid, Array(6).fill(0));
+                drawGrid(finalGrid, Array(finalGrid.length).fill(0));
                 if (typeof onComplete === 'function') {
                     onComplete();
                 }
@@ -207,13 +209,17 @@ if (slotPanel) {
                     return;
                 }
                 const grid = data.grid;
+                slotPanel.classList.add('spinning');
                 animateSpin(grid, () => {
                     const win = Number(data.win || 0);
                     winEl.textContent = `${win.toFixed(2)}₽`;
+                    const multiplier = data.multiplier ? ` x${Number(data.multiplier).toFixed(2)}` : '';
+                    const feature = data.feature ? ` • ${data.feature}` : '';
                     resultText.textContent = win > 0
-                        ? `Выигрыш: ${win.toFixed(2)}₽ | Символ: ${data.symbol}`
+                        ? `Выигрыш: ${win.toFixed(2)}₽${multiplier} • Символ: ${data.symbol}${feature}`
                         : 'Комбо не собрано. Попробуйте еще раз!';
                     statusEl.textContent = win > 0 ? 'Выигрыш!' : 'Пустой спин';
+                    slotPanel.classList.remove('spinning');
                     spinning = false;
                     if (autoSpins > 0) {
                         autoSpins -= 1;
@@ -224,6 +230,7 @@ if (slotPanel) {
             .catch(() => {
                 resultText.textContent = 'Сервис временно недоступен.';
                 statusEl.textContent = 'Ошибка';
+                slotPanel.classList.remove('spinning');
                 spinning = false;
             });
     };

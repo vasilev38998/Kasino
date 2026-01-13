@@ -10,17 +10,8 @@ if (rate_limited('spin', $limit['window'], $limit['max'])) {
     json_response(['error' => 'Слишком много спинов.'], 429);
 }
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
-$slotKey = $input['game'] ?? 'unknown';
-$slotConfigs = [
-    'aurora-cascade' => ['symbols' => ['A', 'K', 'Q', 'J', '10', '9', '★', '✦'], 'scatter' => '★'],
-    'cosmic-cluster' => ['symbols' => ['A', 'K', 'Q', 'J', '10', '9', '✶', '✹'], 'scatter' => '✶'],
-    'dragon-sticky' => ['symbols' => ['A', 'K', 'Q', 'J', '10', '9', '🐉', '🔥'], 'scatter' => '🔥'],
-    'sky-titans' => ['symbols' => ['A', 'K', 'Q', 'J', '10', '9', '⚡', '☁'], 'scatter' => '⚡'],
-    'sugar-bloom' => ['symbols' => ['🍬', '🍭', '🍫', '🍒', '🍋', '🍇', '⭐', '💎'], 'scatter' => '⭐'],
-    'zenith-gems' => ['symbols' => ['🔷', '🔶', '🔺', '🔸', '💎', '✨', 'A', 'K'], 'scatter' => '✨'],
-    'orbit-jewels' => ['symbols' => ['🪐', '🌙', '⭐', '💠', 'A', 'K', 'Q', 'J'], 'scatter' => '⭐'],
-];
-$slotConfig = $slotConfigs[$slotKey] ?? $slotConfigs['aurora-cascade'];
+$slotKey = $input['game'] ?? '';
+$slotConfig = slot_config($slotKey);
 $minBet = (float) $config['game']['min_bet'];
 $maxBet = (float) $config['game']['max_bet'];
 $bet = (float) ($input['bet'] ?? $minBet);
@@ -31,8 +22,8 @@ $balance = user_balance((int) $user['id']);
 if ($balance < $bet) {
     json_response(['error' => t('insufficient_funds')], 400);
 }
-$columns = 6;
-$rows = 5;
+$columns = (int) $slotConfig['cols'];
+$rows = (int) $slotConfig['rows'];
 $grid = [];
 $counts = [];
 $scatterCount = 0;
@@ -54,14 +45,66 @@ foreach ($counts as $symbol => $count) {
 }
 $bestCount = $counts[$bestSymbol] ?? 0;
 $multiplier = 0;
-if ($bestCount >= 8) {
-    $multiplier = ($bestCount - 7) * 0.6;
-}
-if ($slotKey === 'sky-titans' && $scatterCount >= 3) {
-    $multiplier += random_int(2, 8) / 10;
-}
-if ($slotKey === 'sugar-bloom' && $bestCount >= 10) {
-    $multiplier += random_int(5, 20) / 10;
+$feature = null;
+switch ($slotConfig['type']) {
+    case 'cascade':
+        if ($bestCount >= 7) {
+            $multiplier = ($bestCount - 6) * 0.5;
+        }
+        if ($scatterCount >= 3) {
+            $feature = 'free_spins';
+            $multiplier += 1.5;
+        }
+        break;
+    case 'ways':
+        if ($bestCount >= 6) {
+            $multiplier = ($bestCount - 5) * 0.4;
+        }
+        break;
+    case 'sticky':
+        if ($bestCount >= 7) {
+            $multiplier = ($bestCount - 6) * 0.6;
+        }
+        if ($scatterCount >= 2) {
+            $feature = 'sticky_wilds';
+            $multiplier += 0.8;
+        }
+        break;
+    case 'scatter':
+        if ($scatterCount >= 3) {
+            $feature = 'sky_multiplier';
+            $multiplier = random_int(10, 25) / 10;
+        } elseif ($bestCount >= 7) {
+            $multiplier = ($bestCount - 6) * 0.5;
+        }
+        break;
+    case 'cluster':
+        if ($bestCount >= 9) {
+            $multiplier = ($bestCount - 8) * 0.7;
+        }
+        if ($bestCount >= 12) {
+            $feature = 'cluster_burst';
+            $multiplier += 1.2;
+        }
+        break;
+    case 'burst':
+        if ($bestCount >= 8) {
+            $multiplier = ($bestCount - 7) * 0.55;
+        }
+        if ($scatterCount >= 3) {
+            $feature = 'gem_storm';
+            $multiplier += 1.4;
+        }
+        break;
+    case 'orbit':
+        if ($bestCount >= 6) {
+            $multiplier = ($bestCount - 5) * 0.45;
+        }
+        if ($scatterCount >= 3) {
+            $feature = 'orbit_bonus';
+            $multiplier += 1.1;
+        }
+        break;
 }
 $win = round($bet * $multiplier, 2);
 $newBalance = $balance - $bet + $win;
@@ -81,4 +124,6 @@ json_response([
     'scatter' => $scatterCount,
     'balance' => $newBalance,
     'symbol' => $bestSymbol,
+    'feature' => $feature,
+    'multiplier' => $multiplier,
 ]);

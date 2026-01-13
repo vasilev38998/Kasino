@@ -169,6 +169,7 @@ function render_header(string $title): void
     echo "</nav>\n";
     echo "<div class=\"topbar-actions\">\n";
     if (current_user()) {
+        echo "<a class=\"btn\" href=\"/profile.php\">" . t('nav_profile') . "</a>\n";
         echo "<a class=\"btn ghost\" href=\"/logout.php\">" . t('nav_logout') . "</a>\n";
     } else {
         echo "<a class=\"btn ghost\" href=\"/login.php\">" . t('nav_login') . "</a>\n";
@@ -206,6 +207,12 @@ function slots_catalog(): array
             'icon' => '/assets/icons/slot-aurora.svg',
             'rtp' => 96.2,
             'theme' => 'aurora',
+            'mechanic' => 'Каскады + множители',
+            'type' => 'cascade',
+            'cols' => 6,
+            'rows' => 5,
+            'symbols' => ['A', 'K', 'Q', 'J', '10', '9', '★', '✦'],
+            'scatter' => '★',
         ],
         [
             'slug' => 'cosmic-cluster',
@@ -213,6 +220,12 @@ function slots_catalog(): array
             'icon' => '/assets/icons/slot-cosmic.svg',
             'rtp' => 95.7,
             'theme' => 'cosmic',
+            'mechanic' => 'Variable Ways',
+            'type' => 'ways',
+            'cols' => 5,
+            'rows' => 4,
+            'symbols' => ['A', 'K', 'Q', 'J', '10', '9', '✶', '✹'],
+            'scatter' => '✶',
         ],
         [
             'slug' => 'dragon-sticky',
@@ -220,6 +233,12 @@ function slots_catalog(): array
             'icon' => '/assets/icons/slot-dragon.svg',
             'rtp' => 94.9,
             'theme' => 'dragon',
+            'mechanic' => 'Sticky Wilds',
+            'type' => 'sticky',
+            'cols' => 6,
+            'rows' => 5,
+            'symbols' => ['A', 'K', 'Q', 'J', '10', '9', '🐉', '🔥'],
+            'scatter' => '🔥',
         ],
         [
             'slug' => 'sky-titans',
@@ -227,6 +246,12 @@ function slots_catalog(): array
             'icon' => '/assets/icons/slot-sky.svg',
             'rtp' => 96.4,
             'theme' => 'sky',
+            'mechanic' => 'Scatter Multiplier',
+            'type' => 'scatter',
+            'cols' => 6,
+            'rows' => 5,
+            'symbols' => ['A', 'K', 'Q', 'J', '10', '9', '⚡', '☁'],
+            'scatter' => '⚡',
         ],
         [
             'slug' => 'sugar-bloom',
@@ -234,6 +259,12 @@ function slots_catalog(): array
             'icon' => '/assets/icons/slot-sugar.svg',
             'rtp' => 96.1,
             'theme' => 'sugar',
+            'mechanic' => 'Cluster Pays',
+            'type' => 'cluster',
+            'cols' => 7,
+            'rows' => 7,
+            'symbols' => ['🍬', '🍭', '🍫', '🍒', '🍋', '🍇', '⭐', '💎'],
+            'scatter' => '⭐',
         ],
         [
             'slug' => 'zenith-gems',
@@ -241,6 +272,12 @@ function slots_catalog(): array
             'icon' => '/assets/icons/slot-zenith.svg',
             'rtp' => 96.3,
             'theme' => 'zenith',
+            'mechanic' => 'Gems Burst',
+            'type' => 'burst',
+            'cols' => 5,
+            'rows' => 5,
+            'symbols' => ['🔷', '🔶', '🔺', '🔸', '💎', '✨', 'A', 'K'],
+            'scatter' => '✨',
         ],
         [
             'slug' => 'orbit-jewels',
@@ -248,8 +285,25 @@ function slots_catalog(): array
             'icon' => '/assets/icons/slot-orbit.svg',
             'rtp' => 95.9,
             'theme' => 'orbit',
+            'mechanic' => 'Orbit Bonus',
+            'type' => 'orbit',
+            'cols' => 6,
+            'rows' => 4,
+            'symbols' => ['🪐', '🌙', '⭐', '💠', 'A', 'K', 'Q', 'J'],
+            'scatter' => '⭐',
         ],
     ];
+}
+
+function slot_config(string $slug): array
+{
+    $slots = slots_catalog();
+    foreach ($slots as $slot) {
+        if ($slot['slug'] === $slug) {
+            return $slot;
+        }
+    }
+    return $slots[0];
 }
 
 function user_balance(int $userId): float

@@ -22,7 +22,7 @@ render_header($current['name']);
         <img src="<?php echo $current['icon']; ?>" alt="<?php echo $current['name']; ?>" class="slot-icon">
     </div>
     <div class="slot-stage">
-        <div class="slot-canvas card slot-panel" data-slot-game="<?php echo $current['slug']; ?>">
+        <div class="slot-canvas card slot-panel" data-slot-game="<?php echo $current['slug']; ?>" data-cols="<?php echo $current['cols']; ?>" data-rows="<?php echo $current['rows']; ?>">
             <canvas class="slot-reels" width="720" height="420"></canvas>
             <div class="slot-overlay">
                 <div class="slot-status">Готов к спину</div>
@@ -31,8 +31,8 @@ render_header($current['name']);
         </div>
         <div class="card slot-controls">
             <div class="slot-info">
-                <span class="badge">Фриспины: 3+ scatter</span>
-                <span class="badge">Множители: x2-x20</span>
+                <span class="badge"><?php echo $current['mechanic']; ?></span>
+                <span class="badge">Бонус: 3+ scatter</span>
             </div>
             <label>Ставка</label>
             <input type="number" class="slot-bet" value="<?php echo $minBet; ?>" min="<?php echo $minBet; ?>" max="<?php echo $maxBet; ?>">

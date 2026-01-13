@@ -393,6 +393,10 @@ a {
     box-shadow: var(--glow);
 }
 
+.slot-panel.spinning {
+    animation: spinPulse 0.9s ease-in-out infinite;
+}
+
 .slot-section {
     position: relative;
 }
@@ -696,6 +700,12 @@ input:focus, textarea:focus, select:focus {
 @keyframes shimmer {
     0% { background-position: -200px; }
     100% { background-position: 200px; }
+}
+
+@keyframes spinPulse {
+    0% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }
+    50% { box-shadow: 0 0 40px rgba(245, 197, 66, 0.35); }
+    100% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }
 }
 
 @media (max-width: 900px) {
