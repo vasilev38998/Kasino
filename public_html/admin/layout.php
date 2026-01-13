@@ -12,6 +12,7 @@ function admin_header(string $title): void
     echo '<a href="/admin/slots.php">Слоты</a>';
     echo '<a href="/admin/deposits.php">Депозиты</a>';
     echo '<a href="/admin/withdrawals.php">Выводы</a>';
+    echo '<a href="/admin/support.php">Поддержка</a>';
     echo '<a href="/admin/antifraud.php">Антифрод</a>';
     echo '<a href="/admin/settings.php">Настройки</a>';
     echo '</nav></div>';

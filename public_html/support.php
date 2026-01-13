@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/helpers.php';
+require_login();
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_validate($_POST['csrf'] ?? '')) {

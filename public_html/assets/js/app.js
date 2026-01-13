@@ -1032,3 +1032,34 @@ if (document.querySelector('[data-logout]')) {
         window.location.href = '/index.php';
     });
 }
+
+const profileTabs = document.querySelectorAll('[data-profile-tab]');
+const profilePanels = document.querySelectorAll('[data-profile-panel]');
+if (profileTabs.length && profilePanels.length) {
+    const activateProfileTab = (id) => {
+        profileTabs.forEach((tab) => {
+            tab.classList.toggle('is-active', tab.dataset.profileTab === id);
+        });
+        profilePanels.forEach((panel) => {
+            panel.classList.toggle('is-active', panel.dataset.profilePanel === id);
+        });
+    };
+    const getTabFromHash = () => {
+        const hash = window.location.hash.replace('#', '');
+        return hash && document.querySelector(`[data-profile-panel="${hash}"]`) ? hash : profileTabs[0].dataset.profileTab;
+    };
+    activateProfileTab(getTabFromHash());
+    profileTabs.forEach((tab) => {
+        tab.addEventListener('click', (event) => {
+            event.preventDefault();
+            const id = tab.dataset.profileTab;
+            if (id) {
+                history.replaceState(null, '', `#${id}`);
+                activateProfileTab(id);
+            }
+        });
+    });
+    window.addEventListener('hashchange', () => {
+        activateProfileTab(getTabFromHash());
+    });
+}
