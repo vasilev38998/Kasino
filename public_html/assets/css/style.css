@@ -268,6 +268,14 @@ a {
     border-color: rgba(0, 240, 255, 0.35);
 }
 
+.theme-zenith .slot-canvas::after {
+    border-color: rgba(155, 107, 255, 0.4);
+}
+
+.theme-orbit .slot-canvas::after {
+    border-color: rgba(255, 159, 107, 0.4);
+}
+
 .slot-reels {
     display: block;
     width: 100%;
@@ -293,6 +301,14 @@ a {
 
 .theme-aurora .slot-reels {
     background: linear-gradient(160deg, #0b1231, #182243);
+}
+
+.theme-zenith .slot-reels {
+    background: linear-gradient(160deg, #1a1330, #2f1e4f);
+}
+
+.theme-orbit .slot-reels {
+    background: linear-gradient(160deg, #2a1a0f, #4a2d1a);
 }
 
 .slot-overlay {
@@ -347,6 +363,16 @@ a {
 .theme-aurora .slot-controls {
     background: rgba(10, 18, 46, 0.7);
     border: 1px solid rgba(0, 240, 255, 0.25);
+}
+
+.theme-zenith .slot-controls {
+    background: rgba(24, 16, 44, 0.7);
+    border: 1px solid rgba(155, 107, 255, 0.25);
+}
+
+.theme-orbit .slot-controls {
+    background: rgba(40, 22, 12, 0.7);
+    border: 1px solid rgba(255, 159, 107, 0.25);
 }
 
 .slot-info {

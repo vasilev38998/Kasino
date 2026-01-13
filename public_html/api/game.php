@@ -17,6 +17,8 @@ $slotConfigs = [
     'dragon-sticky' => ['symbols' => ['A', 'K', 'Q', 'J', '10', '9', '🐉', '🔥'], 'scatter' => '🔥'],
     'sky-titans' => ['symbols' => ['A', 'K', 'Q', 'J', '10', '9', '⚡', '☁'], 'scatter' => '⚡'],
     'sugar-bloom' => ['symbols' => ['🍬', '🍭', '🍫', '🍒', '🍋', '🍇', '⭐', '💎'], 'scatter' => '⭐'],
+    'zenith-gems' => ['symbols' => ['🔷', '🔶', '🔺', '🔸', '💎', '✨', 'A', 'K'], 'scatter' => '✨'],
+    'orbit-jewels' => ['symbols' => ['🪐', '🌙', '⭐', '💠', 'A', 'K', 'Q', 'J'], 'scatter' => '⭐'],
 ];
 $slotConfig = $slotConfigs[$slotKey] ?? $slotConfigs['aurora-cascade'];
 $minBet = (float) $config['game']['min_bet'];

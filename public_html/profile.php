@@ -40,5 +40,14 @@ render_header(t('profile_title'));
             </form>
         </div>
     </div>
+    <div class="section-subtitle">Последние спины</div>
+    <div class="cards">
+        <?php
+        $logs = db()->prepare('SELECT slot, bet, win, created_at FROM game_logs WHERE user_id = ? ORDER BY id DESC LIMIT 6');
+        $logs->execute([$user['id']]);
+        foreach ($logs->fetchAll() as $log): ?>
+            <div class="card"><?php echo htmlspecialchars($log['slot'], ENT_QUOTES); ?> • <?php echo $log['bet']; ?>₽ → <?php echo $log['win']; ?>₽ • <?php echo $log['created_at']; ?></div>
+        <?php endforeach; ?>
+    </div>
 </section>
 <?php render_footer(); ?>

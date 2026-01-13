@@ -95,6 +95,8 @@ if (slotPanel) {
         dragon: { bg: '#1a1220', accent: '#f5c542', symbols: ['A', 'K', 'Q', 'J', '10', '9', '🐉', '🔥'] },
         sky: { bg: '#101733', accent: '#6ad3ff', symbols: ['A', 'K', 'Q', 'J', '10', '9', '⚡', '☁'] },
         sugar: { bg: '#1b0f24', accent: '#ff7bd9', symbols: ['🍬', '🍭', '🍫', '🍒', '🍋', '🍇', '⭐', '💎'] },
+        zenith: { bg: '#17122a', accent: '#9b6bff', symbols: ['🔷', '🔶', '🔺', '🔸', '💎', '✨', 'A', 'K'] },
+        orbit: { bg: '#1a150f', accent: '#ff9f6b', symbols: ['🪐', '🌙', '⭐', '💠', 'A', 'K', 'Q', 'J'] },
     };
 
     const drawGrid = (grid, offsets = []) => {

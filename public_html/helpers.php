@@ -168,8 +168,6 @@ function render_header(string $title): void
     echo "</nav>\n";
     echo "<div class=\"topbar-actions\">\n";
     if (current_user()) {
-        echo "<a class=\"btn\" href=\"/profile.php\">" . t('nav_profile') . "</a>\n";
-        echo "<a class=\"btn\" href=\"/wallet.php\">" . t('nav_wallet') . "</a>\n";
         echo "<a class=\"btn ghost\" href=\"/logout.php\">" . t('nav_logout') . "</a>\n";
     } else {
         echo "<a class=\"btn ghost\" href=\"/login.php\">" . t('nav_login') . "</a>\n";
@@ -235,6 +233,20 @@ function slots_catalog(): array
             'icon' => '/assets/icons/slot-sugar.svg',
             'rtp' => 96.1,
             'theme' => 'sugar',
+        ],
+        [
+            'slug' => 'zenith-gems',
+            'name' => 'Zenith Gems',
+            'icon' => '/assets/icons/slot-zenith.svg',
+            'rtp' => 96.3,
+            'theme' => 'zenith',
+        ],
+        [
+            'slug' => 'orbit-jewels',
+            'name' => 'Orbit Jewels',
+            'icon' => '/assets/icons/slot-orbit.svg',
+            'rtp' => 95.9,
+            'theme' => 'orbit',
         ],
     ];
 }

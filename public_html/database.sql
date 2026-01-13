@@ -190,4 +190,6 @@ INSERT INTO slots (slug, name, rtp, volatility) VALUES
 ('cosmic-cluster', 'Cosmic Cluster', 95.70, 'medium'),
 ('dragon-sticky', 'Dragon Sticky Wilds', 94.90, 'high'),
 ('sky-titans', 'Sky Titans', 96.40, 'high'),
-('sugar-bloom', 'Sugar Bloom', 96.10, 'medium');
+('sugar-bloom', 'Sugar Bloom', 96.10, 'medium'),
+('zenith-gems', 'Zenith Gems', 96.30, 'high'),
+('orbit-jewels', 'Orbit Jewels', 95.90, 'medium');
