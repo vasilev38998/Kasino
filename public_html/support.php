@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         db()->prepare('INSERT INTO support_tickets (user_id, subject, message, status) VALUES (?, ?, ?, "open")')
             ->execute([$_SESSION['user_id'] ?? null, $_POST['subject'] ?? '', $_POST['message'] ?? '']);
-        $message = 'Запрос отправлен.';
+        $message = 'Запрос отправлен. Ответ появится во вкладке уведомлений и в профиле.';
     }
 }
 render_header(t('support_title'));

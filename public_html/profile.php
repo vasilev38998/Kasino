@@ -75,6 +75,9 @@ $bonuses->execute([$user['id']]);
 $notifications = db()->prepare('SELECT title, message, type, created_at FROM notifications WHERE user_id = ? OR user_id IS NULL ORDER BY id DESC LIMIT 50');
 $notifications->execute([$user['id']]);
 $notificationItems = $notifications->fetchAll();
+$tickets = db()->prepare('SELECT subject, message, status, created_at, reply_message, replied_at FROM support_tickets WHERE user_id = ? ORDER BY id DESC LIMIT 10');
+$tickets->execute([$user['id']]);
+$ticketItems = $tickets->fetchAll();
 render_header(t('profile_title'));
 ?>
 <section class="section profile-section">
@@ -107,6 +110,7 @@ render_header(t('profile_title'));
         <a class="profile-tab" data-profile-tab="profile" href="#profile">Профиль</a>
         <a class="profile-tab" data-profile-tab="wallet" href="#wallet"><?php echo t('wallet_title'); ?></a>
         <a class="profile-tab" data-profile-tab="notifications" href="#notifications"><?php echo t('notifications_title'); ?></a>
+        <a class="profile-tab" data-profile-tab="support" href="#support">Поддержка</a>
     </div>
 
     <div class="profile-panels">
@@ -236,11 +240,49 @@ render_header(t('profile_title'));
 
         <div class="profile-panel" data-profile-panel="notifications" id="notifications">
             <div class="cards">
+                <?php if (!$notificationItems): ?>
+                    <p class="muted">Пока нет уведомлений.</p>
+                <?php endif; ?>
                 <?php foreach ($notificationItems as $item): ?>
-                    <div class="card">
-                        <strong><?php echo htmlspecialchars($item['title'], ENT_QUOTES); ?></strong>
+                    <div class="card notification-card notification-<?php echo htmlspecialchars($item['type'], ENT_QUOTES); ?>">
+                        <div class="notification-header">
+                            <strong><?php echo htmlspecialchars($item['title'], ENT_QUOTES); ?></strong>
+                            <span class="badge"><?php echo $item['type']; ?></span>
+                        </div>
                         <p><?php echo htmlspecialchars($item['message'], ENT_QUOTES); ?></p>
-                        <span class="badge"><?php echo $item['type']; ?> • <?php echo $item['created_at']; ?></span>
+                        <span class="muted small"><?php echo $item['created_at']; ?></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <div class="profile-panel" data-profile-panel="support" id="support">
+            <div class="profile-support-header">
+                <div>
+                    <strong>Ваши обращения</strong>
+                    <p class="muted small">История последних 10 запросов в поддержку.</p>
+                </div>
+                <a class="btn" href="/support.php">Создать запрос</a>
+            </div>
+            <div class="cards">
+                <?php if (!$ticketItems): ?>
+                    <p class="muted">Обращений пока нет.</p>
+                <?php endif; ?>
+                <?php foreach ($ticketItems as $ticket): ?>
+                    <div class="card">
+                        <div class="notification-header">
+                            <strong><?php echo htmlspecialchars($ticket['subject'], ENT_QUOTES); ?></strong>
+                            <span class="badge badge-status"><?php echo $ticket['status']; ?></span>
+                        </div>
+                        <p><?php echo htmlspecialchars($ticket['message'], ENT_QUOTES); ?></p>
+                        <span class="muted small"><?php echo $ticket['created_at']; ?></span>
+                        <?php if ($ticket['reply_message']): ?>
+                            <div class="support-reply">
+                                <strong>Ответ поддержки</strong>
+                                <p><?php echo htmlspecialchars($ticket['reply_message'], ENT_QUOTES); ?></p>
+                                <span class="muted small"><?php echo $ticket['replied_at']; ?></span>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>

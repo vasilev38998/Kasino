@@ -2,6 +2,7 @@
 require __DIR__ . '/layout.php';
 require_staff('support');
 $message = '';
+$status = $_GET['status'] ?? 'all';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_validate($_POST['csrf'] ?? '')) {
         echo '<p>Ошибка безопасности.</p>';
@@ -37,7 +38,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = 'Запрос закрыт.';
     }
 }
-$rows = db()->query('SELECT st.id, st.user_id, st.subject, st.message, st.status, st.created_at, st.reply_message, st.replied_at, u.email FROM support_tickets st LEFT JOIN users u ON u.id = st.user_id ORDER BY st.id DESC LIMIT 50')->fetchAll();
+$statusOptions = ['all', 'open', 'answered', 'closed'];
+if (!in_array($status, $statusOptions, true)) {
+    $status = 'all';
+}
+$filterSql = '';
+$params = [];
+if ($status !== 'all') {
+    $filterSql = 'WHERE st.status = ?';
+    $params[] = $status;
+}
+$stmt = db()->prepare("SELECT st.id, st.user_id, st.subject, st.message, st.status, st.created_at, st.reply_message, st.replied_at, u.email FROM support_tickets st LEFT JOIN users u ON u.id = st.user_id {$filterSql} ORDER BY st.id DESC LIMIT 50");
+$stmt->execute($params);
+$rows = $stmt->fetchAll();
+$counts = db()->query('SELECT status, COUNT(*) AS total FROM support_tickets GROUP BY status')->fetchAll();
+$countMap = ['open' => 0, 'answered' => 0, 'closed' => 0];
+foreach ($counts as $count) {
+    $countMap[$count['status']] = (int) $count['total'];
+}
 admin_header('Поддержка');
 ?>
 <div class="section">
@@ -45,6 +63,12 @@ admin_header('Поддержка');
     <?php if ($message): ?>
         <p><?php echo $message; ?></p>
     <?php endif; ?>
+    <div class="profile-tabs">
+        <a class="profile-tab<?php echo $status === 'all' ? ' is-active' : ''; ?>" href="/admin/support.php">Все</a>
+        <a class="profile-tab<?php echo $status === 'open' ? ' is-active' : ''; ?>" href="/admin/support.php?status=open">Открытые (<?php echo $countMap['open']; ?>)</a>
+        <a class="profile-tab<?php echo $status === 'answered' ? ' is-active' : ''; ?>" href="/admin/support.php?status=answered">Отвеченные (<?php echo $countMap['answered']; ?>)</a>
+        <a class="profile-tab<?php echo $status === 'closed' ? ' is-active' : ''; ?>" href="/admin/support.php?status=closed">Закрытые (<?php echo $countMap['closed']; ?>)</a>
+    </div>
     <div class="cards">
         <?php foreach ($rows as $row): ?>
             <div class="card">

@@ -1325,6 +1325,54 @@ input:focus, textarea:focus, select:focus {
     border: 1px solid rgba(0, 240, 255, 0.2);
 }
 
+.notification-card {
+    display: grid;
+    gap: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.notification-info {
+    border-color: rgba(0, 240, 255, 0.2);
+}
+
+.notification-bonus {
+    border-color: rgba(245, 197, 66, 0.25);
+}
+
+.notification-win {
+    border-color: rgba(157, 119, 255, 0.25);
+}
+
+.notification-support {
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.profile-support-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.support-reply {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.badge-status {
+    background: rgba(255, 255, 255, 0.12);
+}
+
 .profile-social {
     margin-top: 20px;
 }
