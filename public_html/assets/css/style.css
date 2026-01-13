@@ -164,6 +164,11 @@ a {
     letter-spacing: 0.5px;
 }
 
+.section-subtitle {
+    margin-top: 20px;
+    font-size: 18px;
+}
+
 .cards {
     display: grid;
     gap: 16px;
@@ -195,6 +200,91 @@ a {
     background: var(--panel-strong);
     border: 1px solid rgba(245, 197, 66, 0.2);
     box-shadow: var(--glow);
+}
+
+.slot-section {
+    position: relative;
+}
+
+.slot-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.slot-icon {
+    width: 72px;
+    height: 72px;
+}
+
+.slot-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+    gap: 20px;
+}
+
+.slot-canvas {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.slot-reels {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: linear-gradient(145deg, #0f0f22, #121225);
+}
+
+.slot-overlay {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    color: var(--text);
+}
+
+.slot-status {
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.slot-win {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.slot-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.slot-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.slot-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.slot-result {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 12px;
+}
+
+.muted {
+    color: var(--muted);
 }
 
 .slot-card img {
@@ -314,5 +404,8 @@ input:focus, textarea:focus, select:focus {
     }
     .nav {
         flex-wrap: wrap;
+    }
+    .slot-stage {
+        grid-template-columns: 1fr;
     }
 }

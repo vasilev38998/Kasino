@@ -62,10 +62,62 @@ if (balanceEl) {
 
 const slotPanel = document.querySelector('[data-slot-game]');
 if (slotPanel) {
-    const spinBtn = slotPanel.querySelector('.slot-spin');
-    const betInput = slotPanel.querySelector('.slot-bet');
-    const resultEl = document.querySelector('.slot-result');
-    spinBtn?.addEventListener('click', () => {
+    const spinBtn = document.querySelector('.slot-spin');
+    const autoBtn = document.querySelector('.slot-auto');
+    const betInput = document.querySelector('.slot-bet');
+    const resultText = document.querySelector('.slot-result-text');
+    const canvas = document.querySelector('.slot-reels');
+    const statusEl = document.querySelector('.slot-status');
+    const winEl = document.querySelector('.slot-win');
+    const theme = document.querySelector('[data-slot-theme]')?.dataset.slotTheme || 'aurora';
+    const ctx = canvas?.getContext('2d');
+    let spinning = false;
+    let autoSpins = 0;
+
+    const themes = {
+        aurora: { bg: '#121225', accent: '#00f0ff', symbols: ['A', 'K', 'Q', 'J', '10', '9', '★', '✦'] },
+        cosmic: { bg: '#0f0f20', accent: '#6ad3ff', symbols: ['A', 'K', 'Q', 'J', '10', '9', '✶', '✹'] },
+        dragon: { bg: '#1a1220', accent: '#f5c542', symbols: ['A', 'K', 'Q', 'J', '10', '9', '🐉', '🔥'] },
+        sky: { bg: '#101733', accent: '#6ad3ff', symbols: ['A', 'K', 'Q', 'J', '10', '9', '⚡', '☁'] },
+        sugar: { bg: '#1b0f24', accent: '#ff7bd9', symbols: ['🍬', '🍭', '🍫', '🍒', '🍋', '🍇', '⭐', '💎'] },
+    };
+
+    const drawGrid = (grid, offset = 0) => {
+        if (!ctx || !canvas) return;
+        const cols = grid.length;
+        const rows = grid[0]?.length || 0;
+        const cellW = canvas.width / cols;
+        const cellH = canvas.height / rows;
+        const palette = themes[theme] || themes.aurora;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = palette.bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        grid.forEach((col, x) => {
+            col.forEach((symbol, y) => {
+                const yPos = y * cellH + offset;
+                ctx.fillStyle = 'rgba(255,255,255,0.06)';
+                ctx.fillRect(x * cellW + 8, yPos + 8, cellW - 16, cellH - 16);
+                ctx.strokeStyle = palette.accent;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x * cellW + 8, yPos + 8, cellW - 16, cellH - 16);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '24px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(symbol, x * cellW + cellW / 2, yPos + cellH / 2);
+            });
+        });
+    };
+
+    const idleGrid = Array.from({ length: 6 }, () =>
+        Array.from({ length: 5 }, () => themes[theme]?.symbols?.[0] || 'A')
+    );
+    drawGrid(idleGrid);
+
+    const runSpin = () => {
+        if (spinning) return;
+        spinning = true;
+        statusEl.textContent = 'Спин...';
         const bet = Number(betInput?.value || 0);
         fetch('/api/game.php', {
             method: 'POST',
@@ -75,14 +127,47 @@ if (slotPanel) {
             .then((res) => res.json())
             .then((data) => {
                 if (data.error) {
-                    resultEl.textContent = data.error;
+                    resultText.textContent = data.error;
+                    statusEl.textContent = 'Ожидание';
+                    spinning = false;
                     return;
                 }
-                resultEl.textContent = `Выигрыш: ${data.win}₽ | Комбо: ${data.combo}`;
+                const grid = data.grid;
+                let frame = 0;
+                const animate = () => {
+                    frame += 1;
+                    const offset = Math.max(0, 60 - frame * 4);
+                    drawGrid(grid, offset);
+                    if (frame < 15) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        drawGrid(grid, 0);
+                        const win = Number(data.win || 0);
+                        winEl.textContent = `${win.toFixed(2)}₽`;
+                        resultText.textContent = win > 0
+                            ? `Выигрыш: ${win.toFixed(2)}₽ | Символ: ${data.symbol}`
+                            : 'Комбо не собрано. Попробуйте еще раз!';
+                        statusEl.textContent = win > 0 ? 'Выигрыш!' : 'Пустой спин';
+                        spinning = false;
+                        if (autoSpins > 0) {
+                            autoSpins -= 1;
+                            setTimeout(runSpin, 500);
+                        }
+                    }
+                };
+                requestAnimationFrame(animate);
             })
             .catch(() => {
-                resultEl.textContent = 'Сервис временно недоступен.';
+                resultText.textContent = 'Сервис временно недоступен.';
+                statusEl.textContent = 'Ошибка';
+                spinning = false;
             });
+    };
+
+    spinBtn?.addEventListener('click', runSpin);
+    autoBtn?.addEventListener('click', () => {
+        autoSpins = Number(autoBtn.dataset.auto || 0);
+        runSpin();
     });
 }
 

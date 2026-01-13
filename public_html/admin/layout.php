@@ -7,6 +7,7 @@ function admin_header(string $title): void
     echo "<title>{$title}</title></head><body>";
     echo '<div class="topbar"><div class="logo">Kasino <span>Admin</span></div>';
     echo '<nav class="nav">';
+    echo '<a href="/admin/dashboard.php">Дашборд</a>';
     echo '<a href="/admin/users.php">Пользователи</a>';
     echo '<a href="/admin/slots.php">Слоты</a>';
     echo '<a href="/admin/deposits.php">Депозиты</a>';

@@ -6,6 +6,7 @@ return [
         'nav_promotions' => 'Акции',
         'nav_leaderboard' => 'Лидерборд',
         'nav_support' => 'Поддержка',
+        'nav_notifications' => 'Уведомления',
         'nav_profile' => 'Профиль',
         'nav_wallet' => 'Кошелек',
         'nav_logout' => 'Выход',
@@ -52,6 +53,7 @@ return [
         'live_win' => 'Выигрыш',
         'offline_title' => 'Нет подключения',
         'offline_text' => 'Проверьте интернет и повторите попытку.',
+        'notifications_title' => 'Уведомления',
     ],
     'en' => [
         'nav_home' => 'Home',
@@ -59,6 +61,7 @@ return [
         'nav_promotions' => 'Promotions',
         'nav_leaderboard' => 'Leaderboard',
         'nav_support' => 'Support',
+        'nav_notifications' => 'Notifications',
         'nav_profile' => 'Profile',
         'nav_wallet' => 'Wallet',
         'nav_logout' => 'Logout',
@@ -105,5 +108,6 @@ return [
         'live_win' => 'Win',
         'offline_title' => 'Offline',
         'offline_text' => 'Check your connection and try again.',
+        'notifications_title' => 'Notifications',
     ],
 ];

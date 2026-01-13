@@ -161,6 +161,9 @@ function render_header(string $title): void
     echo "<a href=\"/slots.php\">" . t('nav_slots') . "</a>\n";
     echo "<a href=\"/promotions.php\">" . t('nav_promotions') . "</a>\n";
     echo "<a href=\"/leaderboard.php\">" . t('nav_leaderboard') . "</a>\n";
+    if (current_user()) {
+        echo "<a href=\"/notifications.php\">" . t('nav_notifications') . "</a>\n";
+    }
     echo "<a href=\"/support.php\">" . t('nav_support') . "</a>\n";
     echo "</nav>\n";
     echo "<div class=\"topbar-actions\">\n";
@@ -203,18 +206,35 @@ function slots_catalog(): array
             'name' => 'Aurora Cascade',
             'icon' => '/assets/icons/slot-aurora.svg',
             'rtp' => 96.2,
+            'theme' => 'aurora',
         ],
         [
             'slug' => 'cosmic-cluster',
             'name' => 'Cosmic Cluster',
             'icon' => '/assets/icons/slot-cosmic.svg',
             'rtp' => 95.7,
+            'theme' => 'cosmic',
         ],
         [
             'slug' => 'dragon-sticky',
             'name' => 'Dragon Sticky Wilds',
             'icon' => '/assets/icons/slot-dragon.svg',
             'rtp' => 94.9,
+            'theme' => 'dragon',
+        ],
+        [
+            'slug' => 'sky-titans',
+            'name' => 'Sky Titans',
+            'icon' => '/assets/icons/slot-sky.svg',
+            'rtp' => 96.4,
+            'theme' => 'sky',
+        ],
+        [
+            'slug' => 'sugar-bloom',
+            'name' => 'Sugar Bloom',
+            'icon' => '/assets/icons/slot-sugar.svg',
+            'rtp' => 96.1,
+            'theme' => 'sugar',
         ],
     ];
 }

@@ -188,4 +188,6 @@ INSERT INTO staff_permissions (staff_id, permission) VALUES
 INSERT INTO slots (slug, name, rtp, volatility) VALUES
 ('aurora-cascade', 'Aurora Cascade', 96.20, 'high'),
 ('cosmic-cluster', 'Cosmic Cluster', 95.70, 'medium'),
-('dragon-sticky', 'Dragon Sticky Wilds', 94.90, 'high');
+('dragon-sticky', 'Dragon Sticky Wilds', 94.90, 'high'),
+('sky-titans', 'Sky Titans', 96.40, 'high'),
+('sugar-bloom', 'Sugar Bloom', 96.10, 'medium');

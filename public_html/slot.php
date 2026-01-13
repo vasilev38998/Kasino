@@ -13,19 +13,37 @@ foreach ($slots as $slot) {
 }
 render_header($current['name']);
 ?>
-<section class="section">
-    <h2><?php echo $current['name']; ?></h2>
-    <div class="grid-two">
-        <div class="card slot-panel" data-slot-game="<?php echo $current['slug']; ?>">
-            <img src="<?php echo $current['icon']; ?>" alt="<?php echo $current['name']; ?>">
-            <p>RTP <?php echo $current['rtp']; ?>%</p>
+<section class="section slot-section" data-slot-theme="<?php echo $current['theme']; ?>">
+    <div class="slot-header">
+        <div>
+            <h2><?php echo $current['name']; ?></h2>
+            <p class="muted">RTP <?php echo $current['rtp']; ?>% • Volatility: High</p>
+        </div>
+        <img src="<?php echo $current['icon']; ?>" alt="<?php echo $current['name']; ?>" class="slot-icon">
+    </div>
+    <div class="slot-stage">
+        <div class="slot-canvas card slot-panel" data-slot-game="<?php echo $current['slug']; ?>">
+            <canvas class="slot-reels" width="720" height="420"></canvas>
+            <div class="slot-overlay">
+                <div class="slot-status">Готов к спину</div>
+                <div class="slot-win">0₽</div>
+            </div>
+        </div>
+        <div class="card slot-controls">
+            <div class="slot-info">
+                <span class="badge">Фриспины: 3+ scatter</span>
+                <span class="badge">Множители: x2-x20</span>
+            </div>
             <label>Ставка</label>
             <input type="number" class="slot-bet" value="<?php echo $minBet; ?>" min="<?php echo $minBet; ?>" max="<?php echo $maxBet; ?>">
-            <button class="btn slot-spin" type="button">SPIN</button>
-        </div>
-        <div class="card">
-            <strong>Результат</strong>
-            <p class="slot-result">Ожидание спина...</p>
+            <div class="slot-buttons">
+                <button class="btn slot-spin" type="button">SPIN</button>
+                <button class="btn ghost slot-auto" type="button" data-auto="10">AUTO x10</button>
+            </div>
+            <div class="slot-result">
+                <strong>Результат</strong>
+                <p class="slot-result-text">Ожидание спина...</p>
+            </div>
         </div>
     </div>
 </section>
