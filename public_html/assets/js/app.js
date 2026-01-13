@@ -351,8 +351,11 @@ if (slotPanel) {
         gradient.addColorStop(0, symbol.colors?.[0] || '#ffffff');
         gradient.addColorStop(1, symbol.colors?.[1] || '#cccccc');
         drawRoundedRect(x, y, width, height, baseRadius);
-        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
         ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
         drawRoundedRect(x + 4, y + 4, width - 8, height - 8, baseRadius * 0.8);
         ctx.fillStyle = gradient;
         ctx.fill();
@@ -368,6 +371,9 @@ if (slotPanel) {
         drawSymbolShape(symbol, x, y, width, height);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
         ctx.restore();
         if (symbol.shape === 'planet') {
             ctx.save();
