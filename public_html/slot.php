@@ -12,6 +12,8 @@ foreach ($slots as $slot) {
     }
 }
 render_header($current['name']);
+$payouts = $current['payouts'] ?? [];
+$labels = $current['symbol_labels'] ?? [];
 ?>
 <section class="section slot-section theme-<?php echo $current['theme']; ?>" data-slot-theme="<?php echo $current['theme']; ?>">
     <div class="slot-header">
@@ -33,6 +35,31 @@ render_header($current['name']);
             <div class="slot-info">
                 <span class="badge"><?php echo $current['mechanic']; ?></span>
                 <span class="badge">Бонус: 3+ scatter</span>
+            </div>
+            <div class="slot-hints">
+                <strong>Комбо и выплаты</strong>
+                <ul>
+                    <?php $symbolList = implode(', ', array_values($labels)); ?>
+                    <?php foreach ($payouts as $tier): ?>
+                        <?php $count = (int) ($tier['count'] ?? 0); ?>
+                        <?php $symbol = $symbolList ?: $current['scatter']; ?>
+                        <?php $multiplier = (float) ($tier['multiplier'] ?? 0); ?>
+                        <li data-multiplier="<?php echo $multiplier; ?>">
+                            <?php if (($current['win_type'] ?? 'count') === 'cluster'): ?>
+                                Кластер <?php echo $count; ?>+ • x<?php echo $multiplier; ?> • символ: <?php echo $symbol; ?>
+                            <?php else: ?>
+                                <?php echo $count; ?>+ одинаковых • x<?php echo $multiplier; ?> • символ: <?php echo $symbol; ?>
+                            <?php endif; ?>
+                            <span class="slot-hint-win">0₽</span>
+                        </li>
+                    <?php endforeach; ?>
+                    <?php if (!empty($current['rare_symbols'])): ?>
+                        <li class="slot-hint-rare">
+                            Редкие: <?php echo implode(', ', array_map(fn($id) => $labels[$id] ?? $id, $current['rare_symbols'])); ?>
+                            • бонус x<?php echo (float) ($current['rare_bonus'] ?? 0); ?>
+                        </li>
+                    <?php endif; ?>
+                </ul>
             </div>
             <label>Ставка</label>
             <input type="number" class="slot-bet" value="<?php echo $minBet; ?>" min="<?php echo $minBet; ?>" max="<?php echo $maxBet; ?>">

@@ -192,6 +192,7 @@ if (slotPanel) {
 
     const getTheme = () => themes[theme] || themes.aurora;
     let symbolMap = Object.fromEntries(getTheme().symbols.map((symbol) => [symbol.id, symbol]));
+    const toKey = (x, y) => `${x}-${y}`;
     const drawRoundedRect = (x, y, width, height, radius) => {
         if (!ctx) return;
         ctx.beginPath();
@@ -417,7 +418,7 @@ if (slotPanel) {
         }
     };
 
-    const drawGrid = (grid, offsets = []) => {
+    const drawGrid = (grid, offsets = [], highlight = new Set()) => {
         if (!ctx || !canvas) return;
         const cols = grid.length;
         const rows = grid[0]?.length || 0;
@@ -439,6 +440,15 @@ if (slotPanel) {
                     shape: 'orb',
                     colors: [palette.accent, '#ffffff'],
                 };
+                if (highlight.has(toKey(x, y))) {
+                    ctx.save();
+                    ctx.shadowColor = palette.accent;
+                    ctx.shadowBlur = 18;
+                    ctx.strokeStyle = palette.accent;
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(x * cellW + 6, yPos + 6, cellW - 12, cellH - 12);
+                    ctx.restore();
+                }
                 drawSymbol(symbolData, x * cellW + 10, yPos + 10, cellW - 20, cellH - 20);
             });
         });
@@ -449,8 +459,21 @@ if (slotPanel) {
     const idleGrid = Array.from({ length: gridCols }, () =>
         Array.from({ length: gridRows }, () => getTheme().symbols?.[0]?.id || 'fallback')
     );
+    const updatePayoutHints = () => {
+        const bet = Number(betInput?.value || 0);
+        document.querySelectorAll('.slot-hints li[data-multiplier]').forEach((item) => {
+            const multiplier = Number(item.dataset.multiplier || 0);
+            const win = bet * multiplier;
+            const winEl = item.querySelector('.slot-hint-win');
+            if (winEl) {
+                winEl.textContent = `${win.toFixed(2)}₽`;
+            }
+        });
+    };
     resizeCanvas();
     drawGrid(idleGrid);
+    updatePayoutHints();
+    betInput?.addEventListener('input', updatePayoutHints);
     window.addEventListener('resize', () => {
         resizeCanvas();
         drawGrid(idleGrid);
@@ -512,6 +535,9 @@ if (slotPanel) {
                 slotPanel.classList.add('spinning');
                 animateSpin(grid, () => {
                     const win = Number(data.win || 0);
+                    const winCells = Array.isArray(data.win_cells) ? data.win_cells : [];
+                    const highlight = new Set(winCells.map(([x, y]) => toKey(x, y)));
+                    drawGrid(grid, Array(grid.length).fill(0), highlight);
                     winEl.textContent = `${win.toFixed(2)}₽`;
                     const symbolLabel = symbolMap[data.symbol]?.label || data.symbol;
                     const multiplier = data.multiplier ? ` x${Number(data.multiplier).toFixed(2)}` : '';
@@ -598,9 +624,9 @@ minigameButtons.forEach((btn) => {
             const difficultyInputs = wrapper?.querySelectorAll('input[name="plinko_difficulty"]');
             const ctx = canvas?.getContext('2d');
             const plinkoConfigs = {
-                easy: { rows: 6, multipliers: [0.5, 1, 1.5, 2, 1.5, 1, 0.5] },
-                medium: { rows: 8, multipliers: [0, 0.5, 1, 1.5, 2, 3, 2, 1.5, 1, 0.5, 0] },
-                hard: { rows: 10, multipliers: [0, 0.2, 0.5, 1, 1.5, 2, 3, 5, 3, 2, 1.5, 1, 0.5, 0.2, 0] },
+                easy: { rows: 6, multipliers: [0.2, 0.5, 0.8, 1, 1.2, 1, 0.8, 0.5, 0.2] },
+                medium: { rows: 8, multipliers: [0, 0.2, 0.5, 0.8, 1, 1.5, 2, 1.5, 1, 0.8, 0.5, 0.2, 0] },
+                hard: { rows: 10, multipliers: [0, 0.1, 0.2, 0.5, 0.8, 1, 1.5, 2, 3, 2, 1.5, 1, 0.8, 0.5, 0.2, 0.1, 0] },
             };
             let pegLayout = [];
             let slotLayout = [];
@@ -709,12 +735,9 @@ minigameButtons.forEach((btn) => {
                     const slotIndex = Number.isNaN(targetIndex) ? 0 : targetIndex;
                     const targetSlot = slotLayout[slotIndex];
                     if (multipliers.length) {
-                        renderSlots(multipliers, slotIndex);
+                        renderSlots(multipliers);
                     } else {
-                        renderSlots(
-                            plinkoConfigs[getDifficulty()]?.multipliers || plinkoConfigs.easy.multipliers,
-                            slotIndex
-                        );
+                        renderSlots(plinkoConfigs[getDifficulty()]?.multipliers || plinkoConfigs.easy.multipliers);
                     }
                     let x = (canvas?.clientWidth || canvas.width) / 2;
                     let y = 30;
@@ -754,7 +777,7 @@ minigameButtons.forEach((btn) => {
                         if (y > canvas.height - 140) {
                             vx += (targetX - x) * 0.002;
                         }
-                        drawBoard(slotIndex);
+                        drawBoard();
                         ctx.fillStyle = '#00f0ff';
                         ctx.beginPath();
                         ctx.arc(x, y, 10, 0, Math.PI * 2);
@@ -765,6 +788,9 @@ minigameButtons.forEach((btn) => {
                             const multiplier = data.meta?.multiplier ?? 0;
                             const win = Number(data.win || 0);
                             resultEl.textContent = `${resultLabel} x${multiplier} • Выигрыш ${win}₽`;
+                            const fallbackMultipliers = plinkoConfigs[getDifficulty()]?.multipliers || plinkoConfigs.easy.multipliers;
+                            drawBoard(slotIndex);
+                            renderSlots(multipliers.length ? multipliers : fallbackMultipliers, slotIndex);
                         }
                     };
                     animate();

@@ -27,9 +27,34 @@ $rows = (int) $slotConfig['rows'];
 $grid = [];
 $counts = [];
 $scatterCount = 0;
+$winCells = [];
+$bestSymbol = null;
+$bestCount = 0;
+$feature = null;
+$multiplier = 0.0;
+$winType = $slotConfig['win_type'] ?? 'count';
+$payouts = $slotConfig['payouts'] ?? [];
+$rareSymbols = $slotConfig['rare_symbols'] ?? [];
+$rareBonus = (float) ($slotConfig['rare_bonus'] ?? 0);
+$symbols = $slotConfig['symbols'];
+$weights = $slotConfig['weights'] ?? array_fill(0, count($symbols), 1);
+$totalWeight = array_sum($weights);
+
+$pickSymbol = static function () use ($symbols, $weights, $totalWeight): string {
+    $roll = random_int(1, $totalWeight);
+    $current = 0;
+    foreach ($weights as $index => $weight) {
+        $current += $weight;
+        if ($roll <= $current) {
+            return $symbols[$index];
+        }
+    }
+    return $symbols[array_key_first($symbols)];
+};
+
 for ($x = 0; $x < $columns; $x++) {
     for ($y = 0; $y < $rows; $y++) {
-        $symbol = $slotConfig['symbols'][random_int(0, count($slotConfig['symbols']) - 1)];
+        $symbol = $pickSymbol();
         $grid[$x][$y] = $symbol;
         $counts[$symbol] = ($counts[$symbol] ?? 0) + 1;
         if ($symbol === $slotConfig['scatter']) {
@@ -37,72 +62,109 @@ for ($x = 0; $x < $columns; $x++) {
         }
     }
 }
-$bestSymbol = array_key_first($counts);
-foreach ($counts as $symbol => $count) {
-    if ($count > $counts[$bestSymbol]) {
-        $bestSymbol = $symbol;
+if ($winType === 'cluster') {
+    $visited = array_fill(0, $columns, array_fill(0, $rows, false));
+    foreach ($grid as $x => $col) {
+        foreach ($col as $y => $symbol) {
+            if ($visited[$x][$y]) {
+                continue;
+            }
+            $queue = [[$x, $y]];
+            $visited[$x][$y] = true;
+            $cluster = [];
+            while ($queue) {
+                [$cx, $cy] = array_shift($queue);
+                $cluster[] = [$cx, $cy];
+                foreach ([[1, 0], [-1, 0], [0, 1], [0, -1]] as $offset) {
+                    $nx = $cx + $offset[0];
+                    $ny = $cy + $offset[1];
+                    if ($nx < 0 || $nx >= $columns || $ny < 0 || $ny >= $rows) {
+                        continue;
+                    }
+                    if ($visited[$nx][$ny]) {
+                        continue;
+                    }
+                    if ($grid[$nx][$ny] !== $symbol) {
+                        continue;
+                    }
+                    $visited[$nx][$ny] = true;
+                    $queue[] = [$nx, $ny];
+                }
+            }
+            if (count($cluster) > $bestCount) {
+                $bestCount = count($cluster);
+                $bestSymbol = $symbol;
+                $winCells = $cluster;
+            }
+        }
+    }
+} else {
+    $bestSymbol = array_key_first($counts);
+    foreach ($counts as $symbol => $count) {
+        if ($count > $bestCount) {
+            $bestCount = $count;
+            $bestSymbol = $symbol;
+        }
+    }
+    foreach ($grid as $x => $col) {
+        foreach ($col as $y => $symbol) {
+            if ($symbol === $bestSymbol) {
+                $winCells[] = [$x, $y];
+            }
+        }
     }
 }
-$bestCount = $counts[$bestSymbol] ?? 0;
-$multiplier = 0;
-$feature = null;
+
+foreach ($payouts as $tier) {
+    $threshold = (int) ($tier['count'] ?? 0);
+    if ($bestCount >= $threshold) {
+        $multiplier = max($multiplier, (float) ($tier['multiplier'] ?? 0));
+    }
+}
+
+if ($bestSymbol && in_array($bestSymbol, $rareSymbols, true) && $multiplier > 0) {
+    $multiplier += $rareBonus;
+}
+
+if ($multiplier <= 0) {
+    $winCells = [];
+}
+
 switch ($slotConfig['type']) {
     case 'cascade':
-        if ($bestCount >= 7) {
-            $multiplier = ($bestCount - 6) * 0.5;
-        }
         if ($scatterCount >= 3) {
             $feature = 'free_spins';
-            $multiplier += 1.5;
-        }
-        break;
-    case 'ways':
-        if ($bestCount >= 6) {
-            $multiplier = ($bestCount - 5) * 0.4;
+            $multiplier += 1.1;
         }
         break;
     case 'sticky':
-        if ($bestCount >= 7) {
-            $multiplier = ($bestCount - 6) * 0.6;
-        }
         if ($scatterCount >= 2) {
             $feature = 'sticky_wilds';
-            $multiplier += 0.8;
+            $multiplier += 0.7;
         }
         break;
     case 'scatter':
         if ($scatterCount >= 3) {
             $feature = 'sky_multiplier';
-            $multiplier = random_int(10, 25) / 10;
-        } elseif ($bestCount >= 7) {
-            $multiplier = ($bestCount - 6) * 0.5;
+            $multiplier += random_int(8, 18) / 10;
         }
         break;
     case 'cluster':
-        if ($bestCount >= 9) {
-            $multiplier = ($bestCount - 8) * 0.7;
-        }
         if ($bestCount >= 12) {
             $feature = 'cluster_burst';
-            $multiplier += 1.2;
+            $multiplier += 0.8;
         }
         break;
     case 'burst':
-        if ($bestCount >= 8) {
-            $multiplier = ($bestCount - 7) * 0.55;
-        }
         if ($scatterCount >= 3) {
             $feature = 'gem_storm';
-            $multiplier += 1.4;
+            $multiplier += 1.0;
         }
         break;
     case 'orbit':
-        if ($bestCount >= 6) {
-            $multiplier = ($bestCount - 5) * 0.45;
-        }
         if ($scatterCount >= 3) {
             $feature = 'orbit_bonus';
-            $multiplier += 1.1;
+            $multiplier += 0.9;
         }
         break;
 }
@@ -126,4 +188,7 @@ json_response([
     'symbol' => $bestSymbol,
     'feature' => $feature,
     'multiplier' => $multiplier,
+    'win_cells' => $winCells,
+    'win_type' => $winType,
+    'count' => $bestCount,
 ]);
