@@ -99,17 +99,34 @@ if (slotPanel) {
         orbit: { bg: '#1a150f', accent: '#ff9f6b', symbols: ['🪐', '🌙', '⭐', '💠', 'A', 'K', 'Q', 'J'] },
     };
 
+    const resizeCanvas = () => {
+        if (!canvas || !slotPanel) return;
+        const rect = slotPanel.getBoundingClientRect();
+        const ratio = window.devicePixelRatio || 1;
+        const width = Math.max(320, Math.floor(rect.width));
+        const height = Math.max(280, Math.floor(rect.height));
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        if (ctx) {
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        }
+    };
+
     const drawGrid = (grid, offsets = []) => {
         if (!ctx || !canvas) return;
         const cols = grid.length;
         const rows = grid[0]?.length || 0;
-        const cellW = canvas.width / cols;
-        const cellH = canvas.height / rows;
+        const width = canvas.clientWidth || canvas.width;
+        const height = canvas.clientHeight || canvas.height;
+        const cellW = width / cols;
+        const cellH = height / rows;
         const palette = themes[theme] || themes.aurora;
         const useOffsets = offsets.length ? offsets : Array(cols).fill(0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, width, height);
         ctx.fillStyle = palette.bg;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, width, height);
         grid.forEach((col, x) => {
             col.forEach((symbol, y) => {
                 const yPos = y * cellH + useOffsets[x];
@@ -130,7 +147,12 @@ if (slotPanel) {
     const idleGrid = Array.from({ length: 6 }, () =>
         Array.from({ length: 5 }, () => themes[theme]?.symbols?.[0] || 'A')
     );
+    resizeCanvas();
     drawGrid(idleGrid);
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+        drawGrid(idleGrid);
+    });
 
     const randomSymbol = () => {
         const symbols = themes[theme]?.symbols || themes.aurora.symbols;

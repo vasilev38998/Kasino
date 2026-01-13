@@ -10,6 +10,8 @@ render_header(t('profile_title'));
     <div class="grid-two">
         <div class="card">
             <p>Email: <?php echo htmlspecialchars($user['email'], ENT_QUOTES); ?></p>
+            <p>Никнейм: <?php echo htmlspecialchars($user['nickname'], ENT_QUOTES); ?></p>
+            <p>Дата рождения: <?php echo htmlspecialchars($user['birth_date'], ENT_QUOTES); ?></p>
             <p><?php echo t('balance'); ?>: <?php echo number_format($balance, 2, '.', ' '); ?>₽</p>
             <p>Статус: <?php echo $user['status']; ?></p>
         </div>

@@ -1,6 +1,8 @@
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
+    nickname VARCHAR(50) NOT NULL UNIQUE,
+    birth_date DATE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     language VARCHAR(5) DEFAULT 'ru',
     status ENUM('active','banned') DEFAULT 'active',
