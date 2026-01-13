@@ -514,8 +514,126 @@ a {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.plinko-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.plinko-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(245, 197, 66, 0.15);
+    color: #f5c542;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.plinko-status {
+    display: flex;
     gap: 12px;
+    flex-wrap: wrap;
+}
+
+.plinko-shell {
+    display: grid;
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.plinko-sidebar {
+    background: rgba(17, 44, 44, 0.7);
+    border: 1px solid rgba(88, 255, 190, 0.12);
+}
+
+.plinko-board {
+    background: radial-gradient(circle at 20% 10%, rgba(0, 240, 255, 0.08), transparent 55%), rgba(12, 22, 32, 0.85);
+    border: 1px solid rgba(88, 255, 190, 0.12);
+}
+
+.plinko-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.plinko-tab {
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text);
+    font-weight: 600;
+}
+
+.plinko-tab.is-active {
+    background: rgba(245, 197, 66, 0.2);
+    border-color: rgba(245, 197, 66, 0.4);
+    color: #f5c542;
+}
+
+.plinko-block {
+    margin-bottom: 16px;
+}
+
+.plinko-bet-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.plinko-bet-input {
+    margin-bottom: 0;
+}
+
+.plinko-bet-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.plinko-quick {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.plinko-risk {
+    margin-bottom: 0;
+}
+
+.plinko-pins {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.plinko-pins .btn {
+    padding: 8px 6px;
+    font-size: 12px;
+}
+
+.plinko-pins .btn.is-active {
+    background: rgba(245, 197, 66, 0.2);
+    border-color: rgba(245, 197, 66, 0.5);
+    color: #f5c542;
+}
+
+.plinko-play {
+    width: 100%;
+    margin-top: 10px;
 }
 
 .dice-panel,
@@ -758,7 +876,7 @@ a {
 
 .plinko-canvas {
     width: 100%;
-    max-width: 420px;
+    max-width: 520px;
     height: 520px;
     border-radius: 18px;
     background: linear-gradient(160deg, #0f0f22, #1b2246);
@@ -1409,6 +1527,13 @@ input:focus, textarea:focus, select:focus {
     }
     .hero {
         padding-top: 60px;
+    }
+    .plinko-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .plinko-shell {
+        grid-template-columns: 1fr;
     }
     .profile-hero {
         flex-direction: column;
