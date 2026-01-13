@@ -2,9 +2,12 @@
 require __DIR__ . '/helpers.php';
 render_header('Kasino Lux');
 $slots = slots_catalog();
+$config = require __DIR__ . '/config.php';
+$heroSlots = array_slice($slots, 0, 4);
 ?>
-<section class="hero">
+<section class="hero hero-glow">
     <div>
+        <div class="hero-badge">Kasino Lux • VIP Club</div>
         <h1><?php echo t('hero_title'); ?></h1>
         <p><?php echo t('hero_subtitle'); ?></p>
         <div class="hero-actions">
@@ -12,13 +15,34 @@ $slots = slots_catalog();
             <a class="btn ghost" href="/register.php"><?php echo t('cta_register'); ?></a>
             <button class="btn ghost" data-install hidden>Установить PWA</button>
         </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span>RTP Live</span>
+                <strong>96.4%</strong>
+            </div>
+            <div class="hero-stat">
+                <span>Пользователей</span>
+                <strong>12 840</strong>
+            </div>
+            <div class="hero-stat">
+                <span>Бонусы</span>
+                <strong>500₽</strong>
+            </div>
+        </div>
     </div>
     <div class="hero-card">
         <div class="badge"><?php echo t('balance'); ?>: <span data-balance>0₽</span></div>
         <p>RTP Live: 96.4% • Volatility: High</p>
-        <div class="cards">
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
+        <div class="hero-grid">
+            <?php foreach ($heroSlots as $slot): ?>
+                <div class="hero-slot">
+                    <img src="<?php echo $slot['icon']; ?>" alt="<?php echo $slot['name']; ?>">
+                    <div>
+                        <strong><?php echo $slot['name']; ?></strong>
+                        <span>RTP <?php echo $slot['rtp']; ?>%</span>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
@@ -33,6 +57,23 @@ $slots = slots_catalog();
                 <a class="btn" href="/slot.php?game=<?php echo $slot['slug']; ?>"><?php echo t('slot_play'); ?></a>
             </div>
         <?php endforeach; ?>
+    </div>
+</section>
+<section class="section">
+    <h2>VIP-уровни</h2>
+    <div class="cards vip-grid">
+        <div class="card vip-card">
+            <strong>Silver</strong>
+            <p>Кешбек 3% • Еженедельные подарки</p>
+        </div>
+        <div class="card vip-card">
+            <strong>Gold</strong>
+            <p>Кешбек 5% • Персональные бонусы</p>
+        </div>
+        <div class="card vip-card">
+            <strong>Platinum</strong>
+            <p>Кешбек 8% • Приоритетная поддержка</p>
+        </div>
     </div>
 </section>
 <section class="section">

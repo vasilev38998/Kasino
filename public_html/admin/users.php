@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = db()->prepare('UPDATE users SET status = ? WHERE id = ?');
     $stmt->execute([$_POST['status'] ?? 'active', $_POST['user_id'] ?? 0]);
 }
-$users = db()->query('SELECT id, email, status, created_at FROM users ORDER BY id DESC LIMIT 50')->fetchAll();
+$users = db()->query('SELECT id, email, nickname, status, created_at FROM users ORDER BY id DESC LIMIT 50')->fetchAll();
 admin_header('Пользователи');
 ?>
 <div class="section">
@@ -18,6 +18,7 @@ admin_header('Пользователи');
         <?php foreach ($users as $user): ?>
             <div class="card">
                 <p><?php echo htmlspecialchars($user['email'], ENT_QUOTES); ?></p>
+                <p>Никнейм: <?php echo htmlspecialchars($user['nickname'], ENT_QUOTES); ?></p>
                 <p>Статус: <?php echo $user['status']; ?></p>
                 <form method="post">
                     <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
