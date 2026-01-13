@@ -102,6 +102,51 @@ if ($game === 'coin') {
         'multiplier' => $multiplier,
         'outcome' => $value === 7 ? 'push' : ($multiplier > 0 ? 'win' : 'lose'),
     ];
+} elseif ($game === 'treasure') {
+    $pick = (int) ($input['pick'] ?? 1);
+    if ($pick < 1 || $pick > 3) {
+        json_response(['error' => 'Некорректный выбор.'], 400);
+    }
+    $multipliers = [0, 0.6, 1.5, 2.5, 3.5];
+    $weights = [24, 26, 20, 18, 12];
+    $total = array_sum($weights);
+    $roll = random_int(1, $total);
+    $current = 0;
+    $index = 0;
+    foreach ($weights as $i => $weight) {
+        $current += $weight;
+        if ($roll <= $current) {
+            $index = $i;
+            break;
+        }
+    }
+    $multiplier = $multipliers[$index];
+    $win = $bet * $multiplier;
+    $meta = [
+        'pick' => $pick,
+        'multiplier' => $multiplier,
+    ];
+} elseif ($game === 'wheel') {
+    $multipliers = [0, 0.4, 0.8, 1.2, 1.6, 2.2, 3.5];
+    $weights = [26, 20, 18, 14, 10, 8, 4];
+    $total = array_sum($weights);
+    $roll = random_int(1, $total);
+    $current = 0;
+    $index = 0;
+    foreach ($weights as $i => $weight) {
+        $current += $weight;
+        if ($roll <= $current) {
+            $index = $i;
+            break;
+        }
+    }
+    $multiplier = $multipliers[$index];
+    $win = $bet * $multiplier;
+    $meta = [
+        'index' => $index,
+        'multiplier' => $multiplier,
+        'slices' => $multipliers,
+    ];
 } else {
     json_response(['error' => 'Неизвестная игра.'], 400);
 }

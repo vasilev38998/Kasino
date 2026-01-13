@@ -40,19 +40,35 @@ $labels = $current['symbol_labels'] ?? [];
                 <strong>Комбо и выплаты</strong>
                 <ul>
                     <?php $symbolList = implode(', ', array_values($labels)); ?>
+                    <?php $winType = $current['win_type'] ?? 'count'; ?>
                     <?php foreach ($payouts as $tier): ?>
                         <?php $count = (int) ($tier['count'] ?? 0); ?>
                         <?php $symbol = $symbolList ?: $current['scatter']; ?>
                         <?php $multiplier = (float) ($tier['multiplier'] ?? 0); ?>
                         <li data-multiplier="<?php echo $multiplier; ?>">
-                            <?php if (($current['win_type'] ?? 'count') === 'cluster'): ?>
-                                Кластер <?php echo $count; ?>+ • x<?php echo $multiplier; ?> • символ: <?php echo $symbol; ?>
+                            <?php if ($winType === 'cluster'): ?>
+                                Кластер <?php echo $count; ?>+ • x<?php echo $multiplier; ?>
+                            <?php elseif ($winType === 'row'): ?>
+                                Ряд <?php echo $count; ?>+ одинаковых • x<?php echo $multiplier; ?>
+                            <?php elseif ($winType === 'column'): ?>
+                                Колонна <?php echo $count; ?>+ одинаковых • x<?php echo $multiplier; ?>
+                            <?php elseif ($winType === 'diagonal'): ?>
+                                Диагональ <?php echo $count; ?>+ одинаковых • x<?php echo $multiplier; ?>
+                            <?php elseif ($winType === 'edge'): ?>
+                                Край <?php echo $count; ?>+ одинаковых • x<?php echo $multiplier; ?>
+                            <?php elseif ($winType === 'corner'): ?>
+                                Углы <?php echo $count; ?>+ одинаковых • x<?php echo $multiplier; ?>
+                            <?php elseif ($winType === 'center'): ?>
+                                Центр <?php echo $count; ?>+ одинаковых • x<?php echo $multiplier; ?>
+                            <?php elseif ($winType === 'cross'): ?>
+                                Крест <?php echo $count; ?>+ одинаковых • x<?php echo $multiplier; ?>
                             <?php else: ?>
-                                <?php echo $count; ?>+ одинаковых • x<?php echo $multiplier; ?> • символ: <?php echo $symbol; ?>
+                                <?php echo $count; ?>+ одинаковых • x<?php echo $multiplier; ?>
                             <?php endif; ?>
                             <span class="slot-hint-win">0₽</span>
                         </li>
                     <?php endforeach; ?>
+                    <li class="slot-hint-symbols">Символы: <?php echo $symbol; ?></li>
                     <?php if (!empty($current['rare_symbols'])): ?>
                         <li class="slot-hint-rare">
                             Редкие: <?php echo implode(', ', array_map(fn($id) => $labels[$id] ?? $id, $current['rare_symbols'])); ?>

@@ -30,6 +30,18 @@ render_header(t('minigames_title'));
             <p><?php echo t('highlow_subtitle'); ?></p>
             <a class="btn" href="/minigame_highlow.php"><?php echo t('play_now'); ?></a>
         </div>
+        <div class="card minigame-card">
+            <div class="minigame-icon treasure"></div>
+            <h3><?php echo t('treasure_title'); ?></h3>
+            <p><?php echo t('treasure_subtitle'); ?></p>
+            <a class="btn" href="/minigame_treasure.php"><?php echo t('play_now'); ?></a>
+        </div>
+        <div class="card minigame-card">
+            <div class="minigame-icon wheel"></div>
+            <h3><?php echo t('wheel_title'); ?></h3>
+            <p><?php echo t('wheel_subtitle'); ?></p>
+            <a class="btn" href="/minigame_wheel.php"><?php echo t('play_now'); ?></a>
+        </div>
     </div>
 </section>
 <?php render_footer(); ?>

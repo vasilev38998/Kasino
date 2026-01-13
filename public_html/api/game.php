@@ -62,57 +62,233 @@ for ($x = 0; $x < $columns; $x++) {
         }
     }
 }
-if ($winType === 'cluster') {
-    $visited = array_fill(0, $columns, array_fill(0, $rows, false));
-    foreach ($grid as $x => $col) {
-        foreach ($col as $y => $symbol) {
-            if ($visited[$x][$y]) {
-                continue;
+$updateBest = static function (string $symbol, int $count, array $cells) use (&$bestCount, &$bestSymbol, &$winCells): void {
+    if ($count > $bestCount) {
+        $bestCount = $count;
+        $bestSymbol = $symbol;
+        $winCells = $cells;
+    }
+};
+
+$processLine = static function (array $line, array $grid, callable $updateBest): void {
+    $currentSymbol = null;
+    $currentCells = [];
+    foreach ($line as [$x, $y]) {
+        $symbol = $grid[$x][$y];
+        if ($symbol !== $currentSymbol) {
+            if ($currentSymbol !== null) {
+                $updateBest($currentSymbol, count($currentCells), $currentCells);
             }
-            $queue = [[$x, $y]];
-            $visited[$x][$y] = true;
-            $cluster = [];
-            while ($queue) {
-                [$cx, $cy] = array_shift($queue);
-                $cluster[] = [$cx, $cy];
-                foreach ([[1, 0], [-1, 0], [0, 1], [0, -1]] as $offset) {
-                    $nx = $cx + $offset[0];
-                    $ny = $cy + $offset[1];
-                    if ($nx < 0 || $nx >= $columns || $ny < 0 || $ny >= $rows) {
-                        continue;
+            $currentSymbol = $symbol;
+            $currentCells = [[$x, $y]];
+        } else {
+            $currentCells[] = [$x, $y];
+        }
+    }
+    if ($currentSymbol !== null) {
+        $updateBest($currentSymbol, count($currentCells), $currentCells);
+    }
+};
+
+switch ($winType) {
+    case 'cluster':
+        $visited = array_fill(0, $columns, array_fill(0, $rows, false));
+        foreach ($grid as $x => $col) {
+            foreach ($col as $y => $symbol) {
+                if ($visited[$x][$y]) {
+                    continue;
+                }
+                $queue = [[$x, $y]];
+                $visited[$x][$y] = true;
+                $cluster = [];
+                while ($queue) {
+                    [$cx, $cy] = array_shift($queue);
+                    $cluster[] = [$cx, $cy];
+                    foreach ([[1, 0], [-1, 0], [0, 1], [0, -1]] as $offset) {
+                        $nx = $cx + $offset[0];
+                        $ny = $cy + $offset[1];
+                        if ($nx < 0 || $nx >= $columns || $ny < 0 || $ny >= $rows) {
+                            continue;
+                        }
+                        if ($visited[$nx][$ny]) {
+                            continue;
+                        }
+                        if ($grid[$nx][$ny] !== $symbol) {
+                            continue;
+                        }
+                        $visited[$nx][$ny] = true;
+                        $queue[] = [$nx, $ny];
                     }
-                    if ($visited[$nx][$ny]) {
-                        continue;
+                }
+                $updateBest($symbol, count($cluster), $cluster);
+            }
+        }
+        break;
+    case 'row':
+        for ($y = 0; $y < $rows; $y++) {
+            $line = [];
+            for ($x = 0; $x < $columns; $x++) {
+                $line[] = [$x, $y];
+            }
+            $processLine($line, $grid, $updateBest);
+        }
+        break;
+    case 'column':
+        for ($x = 0; $x < $columns; $x++) {
+            $line = [];
+            for ($y = 0; $y < $rows; $y++) {
+                $line[] = [$x, $y];
+            }
+            $processLine($line, $grid, $updateBest);
+        }
+        break;
+    case 'diagonal':
+        for ($startX = 0; $startX < $columns; $startX++) {
+            $line = [];
+            for ($x = $startX, $y = 0; $x < $columns && $y < $rows; $x++, $y++) {
+                $line[] = [$x, $y];
+            }
+            $processLine($line, $grid, $updateBest);
+        }
+        for ($startY = 1; $startY < $rows; $startY++) {
+            $line = [];
+            for ($x = 0, $y = $startY; $x < $columns && $y < $rows; $x++, $y++) {
+                $line[] = [$x, $y];
+            }
+            $processLine($line, $grid, $updateBest);
+        }
+        for ($startX = 0; $startX < $columns; $startX++) {
+            $line = [];
+            for ($x = $startX, $y = $rows - 1; $x < $columns && $y >= 0; $x++, $y--) {
+                $line[] = [$x, $y];
+            }
+            $processLine($line, $grid, $updateBest);
+        }
+        for ($startY = $rows - 2; $startY >= 0; $startY--) {
+            $line = [];
+            for ($x = 0, $y = $startY; $x < $columns && $y >= 0; $x++, $y--) {
+                $line[] = [$x, $y];
+            }
+            $processLine($line, $grid, $updateBest);
+        }
+        break;
+    case 'edge':
+        $edgeCounts = [];
+        for ($x = 0; $x < $columns; $x++) {
+            foreach ([0, $rows - 1] as $y) {
+                $symbol = $grid[$x][$y];
+                $edgeCounts[$symbol] = ($edgeCounts[$symbol] ?? 0) + 1;
+            }
+        }
+        for ($y = 1; $y < $rows - 1; $y++) {
+            foreach ([0, $columns - 1] as $x) {
+                $symbol = $grid[$x][$y];
+                $edgeCounts[$symbol] = ($edgeCounts[$symbol] ?? 0) + 1;
+            }
+        }
+        foreach ($edgeCounts as $symbol => $count) {
+            if ($count > $bestCount) {
+                $bestCount = $count;
+                $bestSymbol = $symbol;
+            }
+        }
+        if ($bestSymbol) {
+            for ($x = 0; $x < $columns; $x++) {
+                foreach ([0, $rows - 1] as $y) {
+                    if ($grid[$x][$y] === $bestSymbol) {
+                        $winCells[] = [$x, $y];
                     }
-                    if ($grid[$nx][$ny] !== $symbol) {
-                        continue;
-                    }
-                    $visited[$nx][$ny] = true;
-                    $queue[] = [$nx, $ny];
                 }
             }
-            if (count($cluster) > $bestCount) {
-                $bestCount = count($cluster);
-                $bestSymbol = $symbol;
-                $winCells = $cluster;
+            for ($y = 1; $y < $rows - 1; $y++) {
+                foreach ([0, $columns - 1] as $x) {
+                    if ($grid[$x][$y] === $bestSymbol) {
+                        $winCells[] = [$x, $y];
+                    }
+                }
             }
         }
-    }
-} else {
+        break;
+    case 'corner':
+        $cornerCells = [
+            [0, 0],
+            [0, $rows - 1],
+            [$columns - 1, 0],
+            [$columns - 1, $rows - 1],
+        ];
+        $cornerCounts = [];
+        foreach ($cornerCells as [$x, $y]) {
+            $symbol = $grid[$x][$y];
+            $cornerCounts[$symbol] = ($cornerCounts[$symbol] ?? 0) + 1;
+        }
+        foreach ($cornerCounts as $symbol => $count) {
+            $updateBest($symbol, $count, array_values(array_filter($cornerCells, fn($cell) => $grid[$cell[0]][$cell[1]] === $symbol)));
+        }
+        break;
+    case 'center':
+        $centerCells = [];
+        $startX = max(1, (int) floor($columns / 2) - 1);
+        $startY = max(1, (int) floor($rows / 2) - 1);
+        $endX = min($columns - 2, $startX + 2);
+        $endY = min($rows - 2, $startY + 2);
+        for ($x = $startX; $x <= $endX; $x++) {
+            for ($y = $startY; $y <= $endY; $y++) {
+                $centerCells[] = [$x, $y];
+            }
+        }
+        $centerCounts = [];
+        foreach ($centerCells as [$x, $y]) {
+            $symbol = $grid[$x][$y];
+            $centerCounts[$symbol] = ($centerCounts[$symbol] ?? 0) + 1;
+        }
+        foreach ($centerCounts as $symbol => $count) {
+            $cells = array_values(array_filter($centerCells, fn($cell) => $grid[$cell[0]][$cell[1]] === $symbol));
+            $updateBest($symbol, $count, $cells);
+        }
+        break;
+    case 'cross':
+        $crossCells = [];
+        $centerX = (int) floor($columns / 2);
+        $centerY = (int) floor($rows / 2);
+        for ($x = 0; $x < $columns; $x++) {
+            $crossCells[] = [$x, $centerY];
+        }
+        for ($y = 0; $y < $rows; $y++) {
+            if ($y === $centerY) {
+                continue;
+            }
+            $crossCells[] = [$centerX, $y];
+        }
+        $crossCounts = [];
+        foreach ($crossCells as [$x, $y]) {
+            $symbol = $grid[$x][$y];
+            $crossCounts[$symbol] = ($crossCounts[$symbol] ?? 0) + 1;
+        }
+        foreach ($crossCounts as $symbol => $count) {
+            $cells = array_values(array_filter($crossCells, fn($cell) => $grid[$cell[0]][$cell[1]] === $symbol));
+            $updateBest($symbol, $count, $cells);
+        }
+        break;
+    case 'count':
+    default:
+        foreach ($counts as $symbol => $count) {
+            $updateBest($symbol, $count, []);
+        }
+        if ($bestSymbol) {
+            foreach ($grid as $x => $col) {
+                foreach ($col as $y => $symbol) {
+                    if ($symbol === $bestSymbol) {
+                        $winCells[] = [$x, $y];
+                    }
+                }
+            }
+        }
+        break;
+}
+
+if (!$bestSymbol) {
     $bestSymbol = array_key_first($counts);
-    foreach ($counts as $symbol => $count) {
-        if ($count > $bestCount) {
-            $bestCount = $count;
-            $bestSymbol = $symbol;
-        }
-    }
-    foreach ($grid as $x => $col) {
-        foreach ($col as $y => $symbol) {
-            if ($symbol === $bestSymbol) {
-                $winCells[] = [$x, $y];
-            }
-        }
-    }
+    $bestCount = $counts[$bestSymbol] ?? 0;
 }
 
 foreach ($payouts as $tier) {

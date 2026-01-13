@@ -188,6 +188,34 @@ if (slotPanel) {
                 { id: 'orbit_wave', label: 'Орбита', shape: 'wave', colors: ['#ff9f6b', '#ff7a3c'] },
             ],
         },
+        reef: {
+            bg: '#0b2a33',
+            accent: '#5fffd0',
+            symbols: [
+                { id: 'reef_shell', label: 'Ракушка', shape: 'candy', colors: ['#6ad3ff', '#5fffd0'] },
+                { id: 'reef_coral', label: 'Коралл', shape: 'prism', colors: ['#ff7bd9', '#ff9f6b'] },
+                { id: 'reef_star', label: 'Морская звезда', shape: 'star', colors: ['#ffd36a', '#ff9f6b'] },
+                { id: 'reef_pearl', label: 'Жемчуг', shape: 'orb', colors: ['#f0f7ff', '#9bd7ff'] },
+                { id: 'reef_wave', label: 'Волна', shape: 'wave', colors: ['#6ad3ff', '#2b3cff'] },
+                { id: 'reef_anchor', label: 'Якорь', shape: 'shield', colors: ['#8bd3ff', '#4b6cff'] },
+                { id: 'reef_orb', label: 'Сфера', shape: 'orb', colors: ['#7efcff', '#3fc7ff'] },
+                { id: 'reef_scale', label: 'Чешуя', shape: 'hex', colors: ['#5fffd0', '#2aaea0'] },
+            ],
+        },
+        rift: {
+            bg: '#140f22',
+            accent: '#9b6bff',
+            symbols: [
+                { id: 'rift_shard', label: 'Осколок', shape: 'diamond', colors: ['#9b6bff', '#ff7bd9'] },
+                { id: 'rift_core', label: 'Ядро', shape: 'orb', colors: ['#ffd36a', '#ff7a3c'] },
+                { id: 'rift_eye', label: 'Око', shape: 'orb', colors: ['#ff7bd9', '#9b6bff'] },
+                { id: 'rift_flare', label: 'Вспышка', shape: 'star', colors: ['#ffd36a', '#ff9f6b'] },
+                { id: 'rift_chain', label: 'Цепь', shape: 'ring', colors: ['#6ad3ff', '#9b6bff'] },
+                { id: 'rift_claw', label: 'Коготь', shape: 'bolt', colors: ['#ff7a3c', '#ffb347'] },
+                { id: 'rift_orb', label: 'Сфера', shape: 'orb', colors: ['#6ad3ff', '#2b3cff'] },
+                { id: 'rift_spike', label: 'Шип', shape: 'prism', colors: ['#ff6ad1', '#7a5bff'] },
+            ],
+        },
     };
 
     const getTheme = () => themes[theme] || themes.aurora;
@@ -589,6 +617,20 @@ document.querySelectorAll('.social-bind').forEach((form) => {
     });
 });
 
+document.querySelectorAll('.treasure-chest').forEach((chest) => {
+    chest.addEventListener('click', () => {
+        const wrapper = chest.closest('.treasure-grid');
+        wrapper?.querySelectorAll('.treasure-chest').forEach((item) => item.classList.remove('active'));
+        chest.classList.add('active');
+    });
+});
+
+document.querySelectorAll('.treasure-grid').forEach((grid) => {
+    if (!grid.querySelector('.treasure-chest.active')) {
+        grid.querySelector('.treasure-chest')?.classList.add('active');
+    }
+});
+
 const minigameButtons = document.querySelectorAll('.minigame-play');
 minigameButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -875,6 +917,64 @@ minigameButtons.forEach((btn) => {
                     } else {
                         resultEl.textContent = `${loseLabel}`;
                     }
+                });
+        }
+        if (game === 'treasure') {
+            const resultEl = wrapper?.querySelector('[data-treasure-result]');
+            const winLabel = wrapper?.dataset.treasureWin || 'Сундук';
+            const loseLabel = wrapper?.dataset.treasureLose || 'Пусто';
+            const selected = wrapper?.querySelector('.treasure-chest.active') || wrapper?.querySelector('.treasure-chest');
+            const pick = Number(selected?.dataset.pick || 1);
+            wrapper?.querySelectorAll('.treasure-chest').forEach((chest) => chest.classList.remove('open'));
+            fetch('/api/minigames.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'treasure', bet, pick }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.error) {
+                        resultEl.textContent = data.error;
+                        return;
+                    }
+                    selected?.classList.add('open');
+                    const multiplier = Number(data.meta?.multiplier || 0);
+                    const win = Number(data.win || 0);
+                    resultEl.textContent = win > 0
+                        ? `${winLabel}: x${multiplier} • ${win}₽`
+                        : `${loseLabel} • x${multiplier}`;
+                });
+        }
+        if (game === 'wheel') {
+            const wheel = wrapper?.querySelector('[data-wheel]');
+            const resultEl = wrapper?.querySelector('[data-wheel-result]');
+            const winLabel = wrapper?.dataset.wheelWin || 'Множитель';
+            const loseLabel = wrapper?.dataset.wheelLose || 'Пустой сектор';
+            wheel?.classList.remove('spinning');
+            fetch('/api/minigames.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'wheel', bet }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.error) {
+                        resultEl.textContent = data.error;
+                        return;
+                    }
+                    const slices = data.meta?.slices || [];
+                    const index = Number(data.meta?.index || 0);
+                    const angle = slices.length ? 360 / slices.length : 60;
+                    const rotation = 360 * 5 + index * angle + angle / 2;
+                    if (wheel) {
+                        wheel.style.setProperty('--wheel-rotation', `${rotation}deg`);
+                        wheel.classList.add('spinning');
+                    }
+                    const multiplier = Number(data.meta?.multiplier || 0);
+                    const win = Number(data.win || 0);
+                    resultEl.textContent = win > 0
+                        ? `${winLabel}: x${multiplier} • ${win}₽`
+                        : `${loseLabel} • x${multiplier}`;
                 });
         }
     });
