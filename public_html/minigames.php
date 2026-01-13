@@ -1,0 +1,21 @@
+<?php
+require __DIR__ . '/helpers.php';
+render_header(t('minigames_title'));
+?>
+<section class="section">
+    <h2><?php echo t('minigames_title'); ?></h2>
+    <p class="muted"><?php echo t('minigames_subtitle'); ?></p>
+    <div class="cards minigames-grid">
+        <div class="card minigame-card">
+            <h3><?php echo t('coin_title'); ?></h3>
+            <p><?php echo t('coin_pick'); ?></p>
+            <a class="btn" href="/minigame_coin.php"><?php echo t('play_now'); ?></a>
+        </div>
+        <div class="card minigame-card">
+            <h3><?php echo t('plinko_title'); ?></h3>
+            <p><?php echo t('plinko_subtitle'); ?></p>
+            <a class="btn" href="/minigame_plinko.php"><?php echo t('play_now'); ?></a>
+        </div>
+    </div>
+</section>
+<?php render_footer(); ?>

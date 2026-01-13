@@ -1,0 +1,142 @@
+<?php
+require __DIR__ . '/helpers.php';
+require_login();
+$user = current_user();
+$config = require __DIR__ . '/config.php';
+$minDeposit = (int) $config['payments']['sbp']['min_amount'];
+$maxDeposit = (int) $config['payments']['sbp']['max_amount'];
+$message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!csrf_validate($_POST['csrf'] ?? '')) {
+        $message = 'Ошибка безопасности.';
+    } else {
+        $amount = max(0, (float) ($_POST['amount'] ?? 0));
+        $action = $_POST['action'] ?? '';
+        $balance = user_balance((int) $user['id']);
+        if ($action === 'deposit') {
+            if ($amount < $minDeposit || $amount > $maxDeposit) {
+                $message = 'Сумма вне лимитов.';
+            } else {
+                db()->prepare('INSERT INTO payments (user_id, amount, status, provider) VALUES (?, ?, "paid", "sbp")')
+                    ->execute([$user['id'], $amount]);
+                db()->prepare('INSERT INTO balances (user_id, balance) VALUES (?, ?) ON DUPLICATE KEY UPDATE balance = balance + VALUES(balance)')
+                    ->execute([$user['id'], $amount]);
+                $message = 'Баланс пополнен.';
+            }
+        }
+        if ($action === 'withdraw') {
+            $config = require __DIR__ . '/config.php';
+            $limit = $config['security']['rate_limit']['withdrawal'];
+            if (rate_limited('withdrawal', $limit['window'], $limit['max'])) {
+                $message = 'Слишком много заявок.';
+            } elseif ($amount <= 0) {
+                $message = 'Сумма некорректна.';
+            } elseif ($balance < $amount) {
+                $message = t('insufficient_funds');
+            } else {
+                db()->prepare('INSERT INTO withdrawals (user_id, amount, status, details) VALUES (?, ?, "pending", ?)')
+                    ->execute([$user['id'], $amount, $_POST['details'] ?? '']);
+                db()->prepare('UPDATE balances SET balance = balance - ? WHERE user_id = ?')
+                    ->execute([$amount, $user['id']]);
+                $message = 'Заявка на вывод отправлена.';
+            }
+        }
+        if ($action === 'promo') {
+            $code = strtoupper(trim($_POST['code'] ?? ''));
+            if ($code === '') {
+                $message = 'Введите промокод.';
+            } else {
+                $stmt = db()->prepare('SELECT * FROM promo_codes WHERE code = ?');
+                $stmt->execute([$code]);
+                $promo = $stmt->fetch();
+                if (!$promo) {
+                    $message = 'Промокод не найден.';
+                } elseif ((int) $promo['used'] >= (int) $promo['max_uses']) {
+                    $message = 'Лимит промокода исчерпан.';
+                } else {
+                    db()->prepare('UPDATE promo_codes SET used = used + 1 WHERE id = ?')
+                        ->execute([$promo['id']]);
+                    db()->prepare('INSERT INTO bonuses (user_id, type, amount, claimed_at) VALUES (?, "promo", ?, NOW())')
+                        ->execute([$user['id'], $promo['amount']]);
+                    db()->prepare('INSERT INTO balances (user_id, balance) VALUES (?, ?) ON DUPLICATE KEY UPDATE balance = balance + VALUES(balance)')
+                        ->execute([$user['id'], $promo['amount']]);
+                    $message = 'Промокод активирован.';
+                }
+            }
+        }
+    }
+}
+$balance = user_balance((int) $user['id']);
+$payments = db()->prepare('SELECT amount, status, created_at FROM payments WHERE user_id = ? ORDER BY id DESC LIMIT 5');
+$payments->execute([$user['id']]);
+$withdrawals = db()->prepare('SELECT amount, status, created_at FROM withdrawals WHERE user_id = ? ORDER BY id DESC LIMIT 5');
+$withdrawals->execute([$user['id']]);
+$bonuses = db()->prepare('SELECT type, amount, claimed_at FROM bonuses WHERE user_id = ? ORDER BY id DESC LIMIT 5');
+$bonuses->execute([$user['id']]);
+render_header(t('wallet_title'));
+?>
+<section class="section">
+    <h2><?php echo t('wallet_title'); ?></h2>
+    <?php if ($message): ?>
+        <p><?php echo $message; ?></p>
+    <?php endif; ?>
+    <div class="grid-two">
+        <div class="card">
+            <h3><?php echo t('deposit'); ?></h3>
+            <form method="post">
+                <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
+                <input type="hidden" name="action" value="deposit">
+                <label>Сумма</label>
+                <input type="number" name="amount" min="<?php echo $minDeposit; ?>" max="<?php echo $maxDeposit; ?>" required>
+                <button class="btn" type="submit">Пополнить</button>
+            </form>
+        </div>
+        <div class="card">
+            <h3><?php echo t('withdraw'); ?></h3>
+            <form method="post">
+                <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
+                <input type="hidden" name="action" value="withdraw">
+                <label>Сумма</label>
+                <input type="number" name="amount" min="100" required>
+                <label>Реквизиты</label>
+                <textarea name="details" rows="3" required></textarea>
+                <button class="btn" type="submit">Отправить</button>
+            </form>
+        </div>
+        <div class="card">
+            <h3><?php echo t('promo_title'); ?></h3>
+            <form method="post">
+                <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
+                <input type="hidden" name="action" value="promo">
+                <label><?php echo t('promo_code'); ?></label>
+                <input type="text" name="code" required>
+                <button class="btn" type="submit"><?php echo t('promo_apply'); ?></button>
+            </form>
+        </div>
+    </div>
+    <div class="card card-spaced">
+        <strong><?php echo t('balance'); ?>:</strong> <?php echo number_format($balance, 2, '.', ' '); ?>₽
+    </div>
+    <div class="section-subtitle"><?php echo t('wallet_history'); ?></div>
+    <div class="grid-two">
+        <div class="card">
+            <strong><?php echo t('history_deposits'); ?></strong>
+            <?php foreach ($payments->fetchAll() as $row): ?>
+                <p><?php echo $row['created_at']; ?> • <?php echo $row['amount']; ?>₽ • <?php echo $row['status']; ?></p>
+            <?php endforeach; ?>
+        </div>
+        <div class="card">
+            <strong><?php echo t('history_withdrawals'); ?></strong>
+            <?php foreach ($withdrawals->fetchAll() as $row): ?>
+                <p><?php echo $row['created_at']; ?> • <?php echo $row['amount']; ?>₽ • <?php echo $row['status']; ?></p>
+            <?php endforeach; ?>
+        </div>
+        <div class="card">
+            <strong><?php echo t('history_bonuses'); ?></strong>
+            <?php foreach ($bonuses->fetchAll() as $row): ?>
+                <p><?php echo $row['claimed_at']; ?> • <?php echo $row['amount']; ?>₽ • <?php echo $row['type']; ?></p>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php render_footer(); ?>
