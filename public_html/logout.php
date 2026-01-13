@@ -1,23 +1,12 @@
 <?php
 require __DIR__ . '/helpers.php';
 logout();
+render_header('Выход');
 ?>
-<!doctype html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Выход</title>
-</head>
-<body>
-<script>
-    if ('caches' in window) {
-        caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key))));
-    }
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((reg) => reg.unregister()));
-    }
-    window.location.href = '/index.php';
-</script>
-</body>
-</html>
+<section class="section logout-section" data-logout>
+    <div class="card">
+        <h2>Выходим из аккаунта...</h2>
+        <p>Подождите пару секунд, мы очищаем данные.</p>
+    </div>
+</section>
+<?php render_footer(); ?>

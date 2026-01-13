@@ -10,6 +10,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $amount = (float) ($input['amount'] ?? 0);
     $balance = user_balance((int) $user['id']);
     if ($action === 'deposit') {
+        if ($amount <= 0) {
+            json_response(['error' => 'Сумма некорректна.'], 400);
+        }
+        $config = require __DIR__ . '/../config.php';
+        $min = $config['payments']['sbp']['min_amount'];
+        $max = $config['payments']['sbp']['max_amount'];
+        if ($amount < $min || $amount > $max) {
+            json_response(['error' => 'Сумма вне лимитов.'], 400);
+        }
         db()->prepare('INSERT INTO payments (user_id, amount, status, provider) VALUES (?, ?, "paid", "sbp")')
             ->execute([$user['id'], $amount]);
         db()->prepare('INSERT INTO balances (user_id, balance) VALUES (?, ?) ON DUPLICATE KEY UPDATE balance = balance + VALUES(balance)')
@@ -17,6 +26,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         json_response(['balance' => $balance + $amount, 'message' => t('balance_updated')]);
     }
     if ($action === 'withdraw') {
+        $config = require __DIR__ . '/../config.php';
+        $limit = $config['security']['rate_limit']['withdrawal'];
+        if (rate_limited('withdrawal', $limit['window'], $limit['max'])) {
+            json_response(['error' => 'Слишком много заявок.'], 429);
+        }
+        if ($amount <= 0) {
+            json_response(['error' => 'Сумма некорректна.'], 400);
+        }
         if ($balance < $amount) {
             json_response(['error' => t('insufficient_funds')], 400);
         }

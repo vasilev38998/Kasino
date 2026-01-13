@@ -2,6 +2,10 @@
 require __DIR__ . '/layout.php';
 require_staff('promo');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!csrf_validate($_POST['csrf'] ?? '')) {
+        echo '<p>Ошибка безопасности.</p>';
+        exit;
+    }
     db()->prepare('INSERT INTO promo_codes (code, amount, max_uses) VALUES (?, ?, ?)')
         ->execute([$_POST['code'] ?? '', $_POST['amount'] ?? 0, $_POST['max_uses'] ?? 0]);
 }
@@ -11,6 +15,7 @@ admin_header('Промокоды');
 <div class="section">
     <h2>Промокоды</h2>
     <form class="form-card" method="post">
+        <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
         <label>Код</label>
         <input type="text" name="code" required>
         <label>Сумма</label>

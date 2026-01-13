@@ -2,6 +2,10 @@
 require __DIR__ . '/layout.php';
 require_staff('cms');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!csrf_validate($_POST['csrf'] ?? '')) {
+        echo '<p>Ошибка безопасности.</p>';
+        exit;
+    }
     db()->prepare('UPDATE settings SET value = ? WHERE name = ?')
         ->execute([$_POST['value'] ?? '', $_POST['name'] ?? '']);
 }
@@ -12,6 +16,7 @@ admin_header('CMS');
     <h2>Контент</h2>
     <?php foreach ($pages as $page): ?>
         <form class="form-card" method="post">
+            <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
             <input type="hidden" name="name" value="<?php echo $page['name']; ?>">
             <label><?php echo $page['name']; ?></label>
             <textarea name="value" rows="6" required><?php echo htmlspecialchars($page['value'], ENT_QUOTES); ?></textarea>

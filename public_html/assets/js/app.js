@@ -60,6 +60,46 @@ if (balanceEl) {
         });
 }
 
+const slotPanel = document.querySelector('[data-slot-game]');
+if (slotPanel) {
+    const spinBtn = slotPanel.querySelector('.slot-spin');
+    const betInput = slotPanel.querySelector('.slot-bet');
+    const resultEl = document.querySelector('.slot-result');
+    spinBtn?.addEventListener('click', () => {
+        const bet = Number(betInput?.value || 0);
+        fetch('/api/game.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ game: slotPanel.dataset.slotGame, bet }),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.error) {
+                    resultEl.textContent = data.error;
+                    return;
+                }
+                resultEl.textContent = `Выигрыш: ${data.win}₽ | Комбо: ${data.combo}`;
+            })
+            .catch(() => {
+                resultEl.textContent = 'Сервис временно недоступен.';
+            });
+    });
+}
+
+document.querySelectorAll('.social-bind').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const provider = form.dataset.provider;
+        const input = form.querySelector('input[name="provider_id"]');
+        if (!input?.value) return;
+        fetch('/api/auth.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'social_bind', provider, provider_id: input.value }),
+        }).then(() => location.reload());
+    });
+});
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js');
@@ -93,4 +133,17 @@ if (liveFeed) {
                 liveFeed.appendChild(row);
             });
         });
+}
+
+if (document.querySelector('[data-logout]')) {
+    const clear = [];
+    if ('caches' in window) {
+        clear.push(caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))));
+    }
+    if ('serviceWorker' in navigator) {
+        clear.push(navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((reg) => reg.unregister())));
+    }
+    Promise.all(clear).finally(() => {
+        window.location.href = '/index.php';
+    });
 }

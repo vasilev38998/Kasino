@@ -10,7 +10,12 @@ if (rate_limited('spin', $limit['window'], $limit['max'])) {
     json_response(['error' => 'Слишком много спинов.'], 429);
 }
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
-$bet = max(10, (float) ($input['bet'] ?? 10));
+$minBet = (float) $config['game']['min_bet'];
+$maxBet = (float) $config['game']['max_bet'];
+$bet = (float) ($input['bet'] ?? $minBet);
+if ($bet < $minBet || $bet > $maxBet) {
+    json_response(['error' => 'Ставка вне лимитов.'], 400);
+}
 $balance = user_balance((int) $user['id']);
 if ($balance < $bet) {
     json_response(['error' => t('insufficient_funds')], 400);

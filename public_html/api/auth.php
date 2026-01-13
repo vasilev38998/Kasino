@@ -13,6 +13,11 @@ if ($action === 'lang') {
 }
 
 if ($action === 'login') {
+    $config = require __DIR__ . '/../config.php';
+    $limit = $config['security']['rate_limit']['login'];
+    if (rate_limited('api_login', $limit['window'], $limit['max'])) {
+        json_response(['error' => 'Слишком много попыток входа.'], 429);
+    }
     $stmt = db()->prepare('SELECT * FROM users WHERE email = ?');
     $stmt->execute([$input['email'] ?? '']);
     $user = $stmt->fetch();
@@ -36,7 +41,7 @@ if ($action === 'social_bind') {
     }
     $provider = $input['provider'] ?? '';
     $providerId = $input['provider_id'] ?? '';
-    if (!in_array($provider, ['vk', 'telegram'], true) || !$providerId) {
+    if (!in_array($provider, ['vk', 'telegram'], true) || !$providerId || strlen($providerId) > 255) {
         json_response(['error' => 'Неверные данные.'], 400);
     }
     db()->prepare('INSERT INTO social_accounts (user_id, provider, provider_id) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE provider_id = VALUES(provider_id)')

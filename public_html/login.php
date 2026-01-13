@@ -4,22 +4,26 @@ $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_validate($_POST['csrf'] ?? '')) {
         $message = 'Ошибка безопасности.';
-    } elseif (rate_limited('login', 300, 10)) {
-        $message = 'Слишком много попыток входа.';
     } else {
-        $stmt = db()->prepare('SELECT * FROM users WHERE email = ?');
-        $stmt->execute([$_POST['email'] ?? '']);
-        $user = $stmt->fetch();
-        $success = $user && password_verify($_POST['password'] ?? '', $user['password_hash']);
-        db()->prepare('INSERT INTO login_attempts (user_id, ip, success) VALUES (?, ?, ?)')
-            ->execute([$user['id'] ?? null, $_SERVER['REMOTE_ADDR'] ?? '', $success ? 1 : 0]);
-        if ($success) {
-            session_regenerate_id(true);
-            $_SESSION['user_id'] = $user['id'];
-            header('Location: /profile.php');
-            exit;
+        $config = require __DIR__ . '/config.php';
+        $limit = $config['security']['rate_limit']['login'];
+        if (rate_limited('login', $limit['window'], $limit['max'])) {
+            $message = 'Слишком много попыток входа.';
+        } else {
+            $stmt = db()->prepare('SELECT * FROM users WHERE email = ?');
+            $stmt->execute([$_POST['email'] ?? '']);
+            $user = $stmt->fetch();
+            $success = $user && password_verify($_POST['password'] ?? '', $user['password_hash']);
+            db()->prepare('INSERT INTO login_attempts (user_id, ip, success) VALUES (?, ?, ?)')
+                ->execute([$user['id'] ?? null, $_SERVER['REMOTE_ADDR'] ?? '', $success ? 1 : 0]);
+            if ($success) {
+                session_regenerate_id(true);
+                $_SESSION['user_id'] = $user['id'];
+                header('Location: /profile.php');
+                exit;
+            }
+            $message = t('invalid_credentials');
         }
-        $message = t('invalid_credentials');
     }
 }
 render_header(t('login_title'));

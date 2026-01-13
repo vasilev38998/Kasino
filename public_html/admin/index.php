@@ -2,11 +2,14 @@
 require __DIR__ . '/auth.php';
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (staff_login($_POST['email'] ?? '', $_POST['password'] ?? '')) {
+    if (!csrf_validate($_POST['csrf'] ?? '')) {
+        $message = 'Ошибка безопасности.';
+    } elseif (staff_login($_POST['email'] ?? '', $_POST['password'] ?? '')) {
         header('Location: /admin/users.php');
         exit;
+    } else {
+        $message = 'Неверные учетные данные.';
     }
-    $message = 'Неверные учетные данные.';
 }
 $staff = staff_user();
 ?>
@@ -27,6 +30,7 @@ $staff = staff_user();
     <?php else: ?>
         <?php if ($message): ?><p><?php echo $message; ?></p><?php endif; ?>
         <form method="post">
+            <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
             <label>Email</label>
             <input type="email" name="email" required>
             <label>Пароль</label>

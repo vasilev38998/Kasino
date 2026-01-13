@@ -24,18 +24,18 @@ render_header(t('profile_title'));
             <p>Флаги: <?php echo $risk ? $risk['flags'] : 'нет'; ?></p>
         </div>
     </div>
-    <div class="grid-two" style="margin-top:20px;">
+    <div class="grid-two profile-social">
         <div class="card">
             <strong>Привязка VK</strong>
-            <form method="post" action="/api/auth.php" onsubmit="event.preventDefault(); fetch('/api/auth.php', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'social_bind', provider:'vk', provider_id: document.getElementById('vk-id').value})}).then(()=>location.reload());">
-                <input type="text" id="vk-id" placeholder="VK ID">
+            <form class="social-bind" data-provider="vk">
+                <input type="text" name="provider_id" placeholder="VK ID" required>
                 <button class="btn" type="submit">Привязать</button>
             </form>
         </div>
         <div class="card">
             <strong>Привязка Telegram</strong>
-            <form method="post" action="/api/auth.php" onsubmit="event.preventDefault(); fetch('/api/auth.php', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'social_bind', provider:'telegram', provider_id: document.getElementById('tg-id').value})}).then(()=>location.reload());">
-                <input type="text" id="tg-id" placeholder="Telegram ID">
+            <form class="social-bind" data-provider="telegram">
+                <input type="text" name="provider_id" placeholder="Telegram ID" required>
                 <button class="btn" type="submit">Привязать</button>
             </form>
         </div>

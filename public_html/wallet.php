@@ -2,6 +2,9 @@
 require __DIR__ . '/helpers.php';
 require_login();
 $user = current_user();
+$config = require __DIR__ . '/config.php';
+$minDeposit = (int) $config['payments']['sbp']['min_amount'];
+$maxDeposit = (int) $config['payments']['sbp']['max_amount'];
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_validate($_POST['csrf'] ?? '')) {
@@ -11,17 +14,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'] ?? '';
         $balance = user_balance((int) $user['id']);
         if ($action === 'deposit') {
-            db()->prepare('INSERT INTO payments (user_id, amount, status, provider) VALUES (?, ?, "paid", "sbp")')
-                ->execute([$user['id'], $amount]);
-            db()->prepare('INSERT INTO balances (user_id, balance) VALUES (?, ?) ON DUPLICATE KEY UPDATE balance = balance + VALUES(balance)')
-                ->execute([$user['id'], $amount]);
-            $message = 'Баланс пополнен.';
+            if ($amount < $minDeposit || $amount > $maxDeposit) {
+                $message = 'Сумма вне лимитов.';
+            } else {
+                db()->prepare('INSERT INTO payments (user_id, amount, status, provider) VALUES (?, ?, "paid", "sbp")')
+                    ->execute([$user['id'], $amount]);
+                db()->prepare('INSERT INTO balances (user_id, balance) VALUES (?, ?) ON DUPLICATE KEY UPDATE balance = balance + VALUES(balance)')
+                    ->execute([$user['id'], $amount]);
+                $message = 'Баланс пополнен.';
+            }
         }
         if ($action === 'withdraw') {
             $config = require __DIR__ . '/config.php';
             $limit = $config['security']['rate_limit']['withdrawal'];
             if (rate_limited('withdrawal', $limit['window'], $limit['max'])) {
                 $message = 'Слишком много заявок.';
+            } elseif ($amount <= 0) {
+                $message = 'Сумма некорректна.';
             } elseif ($balance < $amount) {
                 $message = t('insufficient_funds');
             } else {
@@ -49,7 +58,7 @@ render_header(t('wallet_title'));
                 <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
                 <input type="hidden" name="action" value="deposit">
                 <label>Сумма</label>
-                <input type="number" name="amount" min="100" max="100000" required>
+                <input type="number" name="amount" min="<?php echo $minDeposit; ?>" max="<?php echo $maxDeposit; ?>" required>
                 <button class="btn" type="submit">Пополнить</button>
             </form>
         </div>
@@ -66,7 +75,7 @@ render_header(t('wallet_title'));
             </form>
         </div>
     </div>
-    <div class="card" style="margin-top:20px;">
+    <div class="card card-spaced">
         <strong><?php echo t('balance'); ?>:</strong> <?php echo number_format($balance, 2, '.', ' '); ?>₽
     </div>
 </section>

@@ -4,21 +4,32 @@ $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_validate($_POST['csrf'] ?? '')) {
         $message = 'Ошибка безопасности.';
+    } elseif (!filter_var($_POST['email'] ?? '', FILTER_VALIDATE_EMAIL)) {
+        $message = 'Некорректный email.';
+    } elseif (strlen($_POST['password'] ?? '') < 8) {
+        $message = 'Пароль должен быть не короче 8 символов.';
     } elseif (($_POST['password'] ?? '') !== ($_POST['password_confirm'] ?? '')) {
         $message = 'Пароли не совпадают.';
     } else {
-        $stmt = db()->prepare('INSERT INTO users (email, password_hash, status, language) VALUES (?, ?, "active", ?)');
-        $stmt->execute([
-            $_POST['email'],
-            password_hash($_POST['password'], PASSWORD_DEFAULT),
-            lang(),
-        ]);
-        $userId = (int) db()->lastInsertId();
-        db()->prepare('INSERT INTO balances (user_id, balance) VALUES (?, 0)')->execute([$userId]);
-        $_SESSION['user_id'] = $userId;
-        $message = t('registration_success');
-        header('Location: /profile.php');
-        exit;
+        $stmt = db()->prepare('SELECT id FROM users WHERE email = ?');
+        $stmt->execute([$_POST['email']]);
+        if ($stmt->fetch()) {
+            $message = 'Email уже зарегистрирован.';
+        } else {
+            $stmt = db()->prepare('INSERT INTO users (email, password_hash, status, language) VALUES (?, ?, "active", ?)');
+            $stmt->execute([
+                $_POST['email'],
+                password_hash($_POST['password'], PASSWORD_DEFAULT),
+                lang(),
+            ]);
+            $userId = (int) db()->lastInsertId();
+            db()->prepare('INSERT INTO balances (user_id, balance) VALUES (?, 0)')->execute([$userId]);
+            session_regenerate_id(true);
+            $_SESSION['user_id'] = $userId;
+            $message = t('registration_success');
+            header('Location: /profile.php');
+            exit;
+        }
     }
 }
 render_header(t('register_title'));

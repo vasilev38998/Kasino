@@ -2,6 +2,10 @@
 require __DIR__ . '/layout.php';
 require_staff('users');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!csrf_validate($_POST['csrf'] ?? '')) {
+        echo '<p>Ошибка безопасности.</p>';
+        exit;
+    }
     $stmt = db()->prepare('UPDATE users SET status = ? WHERE id = ?');
     $stmt->execute([$_POST['status'] ?? 'active', $_POST['user_id'] ?? 0]);
 }
@@ -16,6 +20,7 @@ admin_header('Пользователи');
                 <p><?php echo htmlspecialchars($user['email'], ENT_QUOTES); ?></p>
                 <p>Статус: <?php echo $user['status']; ?></p>
                 <form method="post">
+                    <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
                     <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                     <select name="status">
                         <option value="active" <?php echo $user['status'] === 'active' ? 'selected' : ''; ?>>active</option>

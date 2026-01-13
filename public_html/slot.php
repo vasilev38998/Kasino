@@ -2,6 +2,9 @@
 require __DIR__ . '/helpers.php';
 $slots = slots_catalog();
 $game = $_GET['game'] ?? $slots[0]['slug'];
+$config = require __DIR__ . '/config.php';
+$minBet = (int) $config['game']['min_bet'];
+$maxBet = (int) $config['game']['max_bet'];
 $current = $slots[0];
 foreach ($slots as $slot) {
     if ($slot['slug'] === $game) {
@@ -13,38 +16,17 @@ render_header($current['name']);
 <section class="section">
     <h2><?php echo $current['name']; ?></h2>
     <div class="grid-two">
-        <div class="card">
+        <div class="card slot-panel" data-slot-game="<?php echo $current['slug']; ?>">
             <img src="<?php echo $current['icon']; ?>" alt="<?php echo $current['name']; ?>">
             <p>RTP <?php echo $current['rtp']; ?>%</p>
             <label>Ставка</label>
-            <input type="number" id="bet" value="50" min="10" max="1000">
-            <button class="btn" id="spin">SPIN</button>
+            <input type="number" class="slot-bet" value="<?php echo $minBet; ?>" min="<?php echo $minBet; ?>" max="<?php echo $maxBet; ?>">
+            <button class="btn slot-spin" type="button">SPIN</button>
         </div>
         <div class="card">
             <strong>Результат</strong>
-            <p id="result">Ожидание спина...</p>
+            <p class="slot-result">Ожидание спина...</p>
         </div>
     </div>
 </section>
-<script>
-document.getElementById('spin').addEventListener('click', () => {
-    fetch('/api/game.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            game: '<?php echo $current['slug']; ?>',
-            bet: Number(document.getElementById('bet').value)
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        const result = document.getElementById('result');
-        if (data.error) {
-            result.textContent = data.error;
-            return;
-        }
-        result.textContent = `Выигрыш: ${data.win}₽ | Комбо: ${data.combo}`;
-    });
-});
-</script>
 <?php render_footer(); ?>
