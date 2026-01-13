@@ -206,6 +206,15 @@ a {
     position: relative;
 }
 
+.slot-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    background: radial-gradient(circle at top, rgba(0, 240, 255, 0.12), transparent 60%);
+    pointer-events: none;
+}
+
 .slot-header {
     display: flex;
     align-items: center;
@@ -230,11 +239,60 @@ a {
     position: relative;
 }
 
+.slot-canvas::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+}
+
+.theme-sky .slot-canvas::after {
+    border-color: rgba(106, 211, 255, 0.4);
+}
+
+.theme-sugar .slot-canvas::after {
+    border-color: rgba(255, 123, 217, 0.4);
+}
+
+.theme-dragon .slot-canvas::after {
+    border-color: rgba(245, 197, 66, 0.35);
+}
+
+.theme-cosmic .slot-canvas::after {
+    border-color: rgba(106, 211, 255, 0.35);
+}
+
+.theme-aurora .slot-canvas::after {
+    border-color: rgba(0, 240, 255, 0.35);
+}
+
 .slot-reels {
     display: block;
     width: 100%;
     height: auto;
     background: linear-gradient(145deg, #0f0f22, #121225);
+}
+
+.theme-sky .slot-reels {
+    background: linear-gradient(160deg, #0e1b3d, #1a2c6f);
+}
+
+.theme-sugar .slot-reels {
+    background: linear-gradient(160deg, #2a1038, #5c1e5f);
+}
+
+.theme-dragon .slot-reels {
+    background: linear-gradient(160deg, #1f0f18, #3a1624);
+}
+
+.theme-cosmic .slot-reels {
+    background: linear-gradient(160deg, #0e122f, #1b2246);
+}
+
+.theme-aurora .slot-reels {
+    background: linear-gradient(160deg, #0b1231, #182243);
 }
 
 .slot-overlay {
@@ -264,6 +322,31 @@ a {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.theme-sky .slot-controls {
+    background: rgba(12, 24, 64, 0.7);
+    border: 1px solid rgba(106, 211, 255, 0.25);
+}
+
+.theme-sugar .slot-controls {
+    background: rgba(48, 16, 64, 0.7);
+    border: 1px solid rgba(255, 123, 217, 0.25);
+}
+
+.theme-dragon .slot-controls {
+    background: rgba(36, 16, 24, 0.7);
+    border: 1px solid rgba(245, 197, 66, 0.25);
+}
+
+.theme-cosmic .slot-controls {
+    background: rgba(14, 18, 47, 0.7);
+    border: 1px solid rgba(106, 211, 255, 0.25);
+}
+
+.theme-aurora .slot-controls {
+    background: rgba(10, 18, 46, 0.7);
+    border: 1px solid rgba(0, 240, 255, 0.25);
 }
 
 .slot-info {

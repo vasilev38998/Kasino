@@ -9,7 +9,7 @@ if ($action === 'lang') {
         db()->prepare('UPDATE users SET language = ? WHERE id = ?')
             ->execute([lang(), $_SESSION['user_id']]);
     }
-    json_response(['message' => t('language_updated')]);
+    json_response(['message' => t('language_updated'), 'language' => lang()]);
 }
 
 if ($action === 'login') {

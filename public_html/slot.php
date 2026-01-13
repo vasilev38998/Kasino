@@ -13,7 +13,7 @@ foreach ($slots as $slot) {
 }
 render_header($current['name']);
 ?>
-<section class="section slot-section" data-slot-theme="<?php echo $current['theme']; ?>">
+<section class="section slot-section theme-<?php echo $current['theme']; ?>" data-slot-theme="<?php echo $current['theme']; ?>">
     <div class="slot-header">
         <div>
             <h2><?php echo $current['name']; ?></h2>

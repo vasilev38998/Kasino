@@ -11,12 +11,26 @@ const langSwitch = document.querySelector('.lang-switch');
 if (langSwitch) {
     const currentLang = langSwitch.dataset.lang;
     const storedLang = localStorage.getItem('lang');
+    const syncKey = 'langSync';
     if (storedLang && storedLang !== currentLang) {
-        fetch('/api/auth.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'lang', language: storedLang }),
-        }).then(() => location.reload());
+        const syncing = sessionStorage.getItem(syncKey);
+        if (syncing !== storedLang) {
+            sessionStorage.setItem(syncKey, storedLang);
+            fetch('/api/auth.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'lang', language: storedLang }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.language) {
+                        localStorage.setItem('lang', data.language);
+                    }
+                    location.reload();
+                });
+        }
+    } else {
+        sessionStorage.removeItem(syncKey);
     }
     langSwitch.querySelectorAll('button').forEach((btn) => {
         if (btn.dataset.langBtn === currentLang) {
@@ -34,6 +48,7 @@ if (langSwitch) {
                         showToast(data.message);
                     }
                     localStorage.setItem('lang', btn.dataset.langBtn);
+                    sessionStorage.removeItem(syncKey);
                     setTimeout(() => location.reload(), 500);
                 });
         });
@@ -82,19 +97,20 @@ if (slotPanel) {
         sugar: { bg: '#1b0f24', accent: '#ff7bd9', symbols: ['🍬', '🍭', '🍫', '🍒', '🍋', '🍇', '⭐', '💎'] },
     };
 
-    const drawGrid = (grid, offset = 0) => {
+    const drawGrid = (grid, offsets = []) => {
         if (!ctx || !canvas) return;
         const cols = grid.length;
         const rows = grid[0]?.length || 0;
         const cellW = canvas.width / cols;
         const cellH = canvas.height / rows;
         const palette = themes[theme] || themes.aurora;
+        const useOffsets = offsets.length ? offsets : Array(cols).fill(0);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = palette.bg;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         grid.forEach((col, x) => {
             col.forEach((symbol, y) => {
-                const yPos = y * cellH + offset;
+                const yPos = y * cellH + useOffsets[x];
                 ctx.fillStyle = 'rgba(255,255,255,0.06)';
                 ctx.fillRect(x * cellW + 8, yPos + 8, cellW - 16, cellH - 16);
                 ctx.strokeStyle = palette.accent;
@@ -113,6 +129,40 @@ if (slotPanel) {
         Array.from({ length: 5 }, () => themes[theme]?.symbols?.[0] || 'A')
     );
     drawGrid(idleGrid);
+
+    const randomSymbol = () => {
+        const symbols = themes[theme]?.symbols || themes.aurora.symbols;
+        return symbols[Math.floor(Math.random() * symbols.length)];
+    };
+
+    const randomGrid = () =>
+        Array.from({ length: 6 }, () => Array.from({ length: 5 }, randomSymbol));
+
+    const animateSpin = (finalGrid, onComplete) => {
+        if (!ctx || !canvas) return;
+        const start = performance.now();
+        const duration = 900;
+        const baseOffsets = Array.from({ length: 6 }, (_, i) => 160 + i * 24);
+        let tempGrid = randomGrid();
+        const tick = (now) => {
+            const t = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const offsets = baseOffsets.map((base, i) => Math.max(0, base * (1 - eased) - i * 6));
+            if (t < 1) {
+                if (Math.floor(now / 80) % 2 === 0) {
+                    tempGrid = randomGrid();
+                }
+                drawGrid(tempGrid, offsets);
+                requestAnimationFrame(tick);
+            } else {
+                drawGrid(finalGrid, Array(6).fill(0));
+                if (typeof onComplete === 'function') {
+                    onComplete();
+                }
+            }
+        };
+        requestAnimationFrame(tick);
+    };
 
     const runSpin = () => {
         if (spinning) return;
@@ -133,29 +183,19 @@ if (slotPanel) {
                     return;
                 }
                 const grid = data.grid;
-                let frame = 0;
-                const animate = () => {
-                    frame += 1;
-                    const offset = Math.max(0, 60 - frame * 4);
-                    drawGrid(grid, offset);
-                    if (frame < 15) {
-                        requestAnimationFrame(animate);
-                    } else {
-                        drawGrid(grid, 0);
-                        const win = Number(data.win || 0);
-                        winEl.textContent = `${win.toFixed(2)}₽`;
-                        resultText.textContent = win > 0
-                            ? `Выигрыш: ${win.toFixed(2)}₽ | Символ: ${data.symbol}`
-                            : 'Комбо не собрано. Попробуйте еще раз!';
-                        statusEl.textContent = win > 0 ? 'Выигрыш!' : 'Пустой спин';
-                        spinning = false;
-                        if (autoSpins > 0) {
-                            autoSpins -= 1;
-                            setTimeout(runSpin, 500);
-                        }
+                animateSpin(grid, () => {
+                    const win = Number(data.win || 0);
+                    winEl.textContent = `${win.toFixed(2)}₽`;
+                    resultText.textContent = win > 0
+                        ? `Выигрыш: ${win.toFixed(2)}₽ | Символ: ${data.symbol}`
+                        : 'Комбо не собрано. Попробуйте еще раз!';
+                    statusEl.textContent = win > 0 ? 'Выигрыш!' : 'Пустой спин';
+                    spinning = false;
+                    if (autoSpins > 0) {
+                        autoSpins -= 1;
+                        setTimeout(runSpin, 600);
                     }
-                };
-                requestAnimationFrame(animate);
+                });
             })
             .catch(() => {
                 resultText.textContent = 'Сервис временно недоступен.';
