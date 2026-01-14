@@ -31,6 +31,7 @@ $winCells = [];
 $bestSymbol = null;
 $bestCount = 0;
 $feature = null;
+$featureBonus = 0.0;
 $multiplier = 0.0;
 $winType = $slotConfig['win_type'] ?? 'count';
 $payouts = $slotConfig['payouts'] ?? [];
@@ -321,45 +322,51 @@ if ($featureTrigger) {
         $feature = $slotConfig['feature_tag'] ?? $feature;
         $minStep = (int) round($featureMin * 10);
         $maxStep = (int) round($featureMax * 10);
-        $bonus = random_int(min($minStep, $maxStep), max($minStep, $maxStep)) / 10;
-        $multiplier += $bonus;
+        $featureBonus = random_int(min($minStep, $maxStep), max($minStep, $maxStep)) / 10;
+        $multiplier += $featureBonus;
     }
 } else {
     switch ($slotConfig['type']) {
         case 'cascade':
             if ($scatterCount >= 3) {
                 $feature = 'free_spins';
-                $multiplier += 1.1;
+                $featureBonus = 1.1;
+                $multiplier += $featureBonus;
             }
             break;
         case 'sticky':
             if ($scatterCount >= 2) {
                 $feature = 'sticky_wilds';
-                $multiplier += 0.7;
+                $featureBonus = 0.7;
+                $multiplier += $featureBonus;
             }
             break;
         case 'scatter':
             if ($scatterCount >= 3) {
                 $feature = 'sky_multiplier';
-                $multiplier += random_int(8, 18) / 10;
+                $featureBonus = random_int(8, 18) / 10;
+                $multiplier += $featureBonus;
             }
             break;
         case 'cluster':
             if ($bestCount >= 12) {
                 $feature = 'cluster_burst';
-                $multiplier += 0.8;
+                $featureBonus = 0.8;
+                $multiplier += $featureBonus;
             }
             break;
         case 'burst':
             if ($scatterCount >= 3) {
                 $feature = 'gem_storm';
-                $multiplier += 1.0;
+                $featureBonus = 1.0;
+                $multiplier += $featureBonus;
             }
             break;
         case 'orbit':
             if ($scatterCount >= 3) {
                 $feature = 'orbit_bonus';
-                $multiplier += 0.9;
+                $featureBonus = 0.9;
+                $multiplier += $featureBonus;
             }
             break;
     }
@@ -371,7 +378,12 @@ db()->prepare('UPDATE balances SET balance = ? WHERE user_id = ?')
     ->execute([$newBalance, $user['id']]);
 
 db()->prepare('INSERT INTO game_logs (user_id, slot, bet, win, meta) VALUES (?, ?, ?, ?, ?)')
-    ->execute([$user['id'], $slotKey, $bet, $win, json_encode(['grid' => $grid, 'scatter' => $scatterCount])]);
+    ->execute([$user['id'], $slotKey, $bet, $win, json_encode([
+        'grid' => $grid,
+        'scatter' => $scatterCount,
+        'feature' => $feature,
+        'feature_bonus' => $featureBonus,
+    ])]);
 
 db()->prepare('UPDATE users SET total_wins = total_wins + ? WHERE id = ?')
     ->execute([$win, $user['id']]);
@@ -383,6 +395,7 @@ json_response([
     'balance' => $newBalance,
     'symbol' => $bestSymbol,
     'feature' => $feature,
+    'feature_bonus' => $featureBonus,
     'multiplier' => $multiplier,
     'win_cells' => $winCells,
     'win_type' => $winType,

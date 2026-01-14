@@ -18,6 +18,10 @@ $volatility = $current['volatility'] ?? 'medium';
 $featureName = $current['feature_name'] ?? 'Бонус-режим';
 $featureDesc = $current['feature_desc'] ?? 'Соберите символы, чтобы активировать бонус.';
 $bonusHint = $current['bonus_hint'] ?? 'Бонус: 3+ scatter';
+$featureTag = $current['feature_tag'] ?? '';
+$featureMin = (float) ($current['feature_bonus_min'] ?? 0);
+$featureMax = (float) ($current['feature_bonus_max'] ?? 0);
+$featureRange = $featureMax > 0 ? sprintf('%.1f–%.1f', $featureMin, $featureMax) : '';
 ?>
 <section class="section slot-section theme-<?php echo $current['theme']; ?>" data-slot-theme="<?php echo $current['theme']; ?>">
     <div class="slot-header">
@@ -93,7 +97,7 @@ $bonusHint = $current['bonus_hint'] ?? 'Бонус: 3+ scatter';
             </div>
         </div>
         <div class="slot-field">
-            <div class="slot-canvas card slot-panel" data-slot-game="<?php echo $current['slug']; ?>" data-cols="<?php echo $current['cols']; ?>" data-rows="<?php echo $current['rows']; ?>">
+            <div class="slot-canvas card slot-panel" data-slot-game="<?php echo $current['slug']; ?>" data-cols="<?php echo $current['cols']; ?>" data-rows="<?php echo $current['rows']; ?>" data-feature-tag="<?php echo htmlspecialchars($featureTag, ENT_QUOTES); ?>" data-feature-name="<?php echo htmlspecialchars($featureName, ENT_QUOTES); ?>" data-feature-range="<?php echo htmlspecialchars($featureRange, ENT_QUOTES); ?>">
                 <canvas class="slot-reels" width="720" height="420"></canvas>
             </div>
             <div class="slot-overlay">

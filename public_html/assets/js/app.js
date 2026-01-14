@@ -580,11 +580,22 @@ if (slotPanel) {
                     winEl.textContent = `${win.toFixed(2)}₽`;
                     const symbolLabel = symbolMap[data.symbol]?.label || data.symbol;
                     const multiplier = data.multiplier ? ` x${Number(data.multiplier).toFixed(2)}` : '';
-                    const feature = data.feature ? ` • ${data.feature}` : '';
+                    const featureTag = slotPanel.dataset.featureTag || '';
+                    const featureName = slotPanel.dataset.featureName || '';
+                    const featureRange = slotPanel.dataset.featureRange ? ` (+${slotPanel.dataset.featureRange}x)` : '';
+                    const featureBonus = data.feature_bonus ? `+${Number(data.feature_bonus).toFixed(2)}x` : '';
+                    const feature =
+                        data.feature && data.feature === featureTag && featureName
+                            ? ` • ${featureName} ${featureBonus || featureRange}`.trim()
+                            : '';
                     resultText.textContent = win > 0
                         ? `Выигрыш: ${win.toFixed(2)}₽${multiplier} • Символ: ${symbolLabel}${feature}`
                         : 'Комбо не собрано. Попробуйте еще раз!';
                     statusEl.textContent = win > 0 ? 'Выигрыш!' : 'Пустой спин';
+                    if (data.feature && data.feature === featureTag) {
+                        slotPanel.classList.add('feature-active');
+                        setTimeout(() => slotPanel.classList.remove('feature-active'), 1200);
+                    }
                     slotPanel.classList.remove('spinning');
                     spinning = false;
                     if (autoSpins > 0) {

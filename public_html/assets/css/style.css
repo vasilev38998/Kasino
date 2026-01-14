@@ -1032,6 +1032,11 @@ a {
     box-shadow: var(--glow);
 }
 
+.slot-panel.feature-active {
+    border-color: rgba(245, 197, 66, 0.65);
+    box-shadow: 0 0 25px rgba(245, 197, 66, 0.35);
+}
+
 .slot-panel.spinning {
     animation: spinPulse 0.9s ease-in-out infinite;
 }
