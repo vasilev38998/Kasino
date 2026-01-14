@@ -523,6 +523,45 @@ a {
     text-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
 }
 
+.minigame-icon.arcade-coin {
+    background: radial-gradient(circle at 30% 30%, #ffd36a, #ff7a3c);
+}
+
+.minigame-icon.arcade-coin::after {
+    content: '🪙';
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+}
+
+.minigame-icon.arcade-memory {
+    background: linear-gradient(145deg, #9b6bff, #6ad3ff);
+}
+
+.minigame-icon.arcade-memory::after {
+    content: '🧠';
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+}
+
+.minigame-icon.arcade-rps {
+    background: linear-gradient(145deg, #ff7bd9, #ffd36a);
+}
+
+.minigame-icon.arcade-rps::after {
+    content: '✊';
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+}
+
 .minigame-layout {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);

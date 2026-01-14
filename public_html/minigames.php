@@ -50,4 +50,28 @@ render_header(t('minigames_title'));
         </div>
     </div>
 </section>
+<section class="section">
+    <h2>Аркадные мини-игры</h2>
+    <p class="muted">Быстрые игры без ставок, добавленные из открытых исходников.</p>
+    <div class="cards minigames-grid">
+        <div class="card minigame-card">
+            <div class="minigame-icon arcade-coin"></div>
+            <h3>Coin Flip Challenge</h3>
+            <p>Два игрока, быстрая дуэль на орле и решке.</p>
+            <a class="btn" href="/vendor/fun-games-hub/coin-flip/index.html">Играть</a>
+        </div>
+        <div class="card minigame-card">
+            <div class="minigame-icon arcade-memory"></div>
+            <h3>Memory Match</h3>
+            <p>Найдите все пары как можно быстрее.</p>
+            <a class="btn" href="/vendor/fun-games-hub/memory-game/index.html">Играть</a>
+        </div>
+        <div class="card minigame-card">
+            <div class="minigame-icon arcade-rps"></div>
+            <h3>Rock Paper Scissors</h3>
+            <p>Классическая игра на реакцию и удачу.</p>
+            <a class="btn" href="/vendor/fun-games-hub/rock-paper-scissors/index.html">Играть</a>
+        </div>
+    </div>
+</section>
 <?php render_footer(); ?>
