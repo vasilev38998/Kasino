@@ -2,14 +2,18 @@
 require __DIR__ . '/layout.php';
 require_staff('promo');
 $message = '';
-function generate_promo_code(string $prefix, int $length): string
+function generate_promo_code(): string
 {
     $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    $code = '';
-    for ($i = 0; $i < $length; $i++) {
-        $code .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+    $parts = [];
+    for ($i = 0; $i < 4; $i++) {
+        $segment = '';
+        for ($j = 0; $j < 4; $j++) {
+            $segment .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+        }
+        $parts[] = $segment;
     }
-    return $prefix . $code;
+    return implode('-', $parts);
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_validate($_POST['csrf'] ?? '')) {
@@ -18,34 +22,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $action = $_POST['action'] ?? 'create';
     if ($action === 'create') {
-        db()->prepare('INSERT INTO promo_codes (code, amount, max_uses) VALUES (?, ?, ?)')
-            ->execute([$_POST['code'] ?? '', $_POST['amount'] ?? 0, $_POST['max_uses'] ?? 0]);
-        $message = 'Промокод создан.';
+        $code = strtoupper(trim($_POST['code'] ?? ''));
+        $amount = (float) ($_POST['amount'] ?? 0);
+        if (!preg_match('/^(?:[A-Z0-9]{4}-){3}[A-Z0-9]{4}$/', $code)) {
+            $message = 'Неверный формат промокода.';
+        } elseif ($amount <= 0) {
+            $message = 'Сумма некорректна.';
+        } else {
+            db()->prepare('INSERT INTO promo_codes (code, amount, max_uses) VALUES (?, ?, 1)')
+                ->execute([$code, $amount]);
+            $message = 'Промокод создан.';
+        }
     }
     if ($action === 'generate') {
         $count = max(1, min(100, (int) ($_POST['count'] ?? 1)));
         $amount = (float) ($_POST['amount'] ?? 0);
-        $maxUses = max(1, (int) ($_POST['max_uses'] ?? 1));
-        $prefix = strtoupper(trim($_POST['prefix'] ?? ''));
-        $length = max(6, min(12, (int) ($_POST['length'] ?? 8)));
-        $insert = db()->prepare('INSERT INTO promo_codes (code, amount, max_uses) VALUES (?, ?, ?)');
-        $check = db()->prepare('SELECT COUNT(*) AS total FROM promo_codes WHERE code = ?');
-        $created = [];
-        for ($i = 0; $i < $count; $i++) {
-            $tries = 0;
-            do {
-                $code = generate_promo_code($prefix, $length);
-                $check->execute([$code]);
-                $exists = (int) $check->fetchColumn() > 0;
-                $tries++;
-            } while ($exists && $tries < 5);
-            if ($exists) {
-                continue;
+        if ($amount <= 0) {
+            $message = 'Сумма некорректна.';
+        } else {
+            $insert = db()->prepare('INSERT INTO promo_codes (code, amount, max_uses) VALUES (?, ?, 1)');
+            $check = db()->prepare('SELECT COUNT(*) AS total FROM promo_codes WHERE code = ?');
+            $created = [];
+            for ($i = 0; $i < $count; $i++) {
+                $tries = 0;
+                do {
+                    $code = generate_promo_code();
+                    $check->execute([$code]);
+                    $exists = (int) $check->fetchColumn() > 0;
+                    $tries++;
+                } while ($exists && $tries < 5);
+                if ($exists) {
+                    continue;
+                }
+                $insert->execute([$code, $amount]);
+                $created[] = $code;
             }
-            $insert->execute([$code, $amount, $maxUses]);
-            $created[] = $code;
+            $message = $created ? 'Сгенерировано: ' . implode(', ', $created) : 'Не удалось создать новые промокоды.';
         }
-        $message = $created ? 'Сгенерировано: ' . implode(', ', $created) : 'Не удалось создать новые промокоды.';
     }
 }
 $rows = db()->query('SELECT code, amount, max_uses, used FROM promo_codes ORDER BY id DESC LIMIT 50')->fetchAll();
@@ -60,26 +73,18 @@ admin_header('Промокоды');
         <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
         <input type="hidden" name="action" value="create">
         <label>Код</label>
-        <input type="text" name="code" required>
+        <input type="text" name="code" placeholder="XXXX-XXXX-XXXX-XXXX" required>
         <label>Сумма</label>
         <input type="number" name="amount" required>
-        <label>Лимит</label>
-        <input type="number" name="max_uses" required>
         <button class="btn" type="submit">Создать</button>
     </form>
     <form class="form-card" method="post">
         <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
         <input type="hidden" name="action" value="generate">
-        <label>Префикс</label>
-        <input type="text" name="prefix" placeholder="LUX">
-        <label>Длина кода</label>
-        <input type="number" name="length" min="6" max="12" value="8" required>
         <label>Количество</label>
         <input type="number" name="count" min="1" max="100" value="5" required>
         <label>Сумма</label>
         <input type="number" name="amount" required>
-        <label>Лимит</label>
-        <input type="number" name="max_uses" required>
         <button class="btn" type="submit">Сгенерировать</button>
     </form>
     <div class="cards">

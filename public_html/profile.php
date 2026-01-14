@@ -43,30 +43,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'promo') {
             $code = strtoupper(trim($_POST['code'] ?? ''));
             if ($code === '') {
-                $walletMessage = 'Введите промокод.';
+                $walletMessage = t('promo_code_required');
+            } elseif (!preg_match('/^(?:[A-Z0-9]{4}-){3}[A-Z0-9]{4}$/', $code)) {
+                $walletMessage = t('promo_invalid');
             } else {
-                $stmt = db()->prepare('SELECT * FROM promo_codes WHERE code = ?');
+                $pdo = db();
+                $pdo->beginTransaction();
+                $stmt = $pdo->prepare('SELECT * FROM promo_codes WHERE code = ? FOR UPDATE');
                 $stmt->execute([$code]);
                 $promo = $stmt->fetch();
                 if (!$promo) {
-                    $walletMessage = 'Промокод не найден.';
+                    $walletMessage = t('promo_not_found');
+                    $pdo->rollBack();
                 } elseif ((int) $promo['used'] >= (int) $promo['max_uses']) {
-                    $walletMessage = 'Лимит промокода исчерпан.';
+                    $walletMessage = t('promo_used');
+                    $pdo->rollBack();
                 } else {
-                    db()->prepare('UPDATE promo_codes SET used = used + 1 WHERE id = ?')
-                        ->execute([$promo['id']]);
-                    db()->prepare('INSERT INTO bonuses (user_id, type, amount, claimed_at) VALUES (?, "promo", ?, NOW())')
-                        ->execute([$user['id'], $promo['amount']]);
-                    db()->prepare('INSERT INTO balances (user_id, balance) VALUES (?, ?) ON DUPLICATE KEY UPDATE balance = balance + VALUES(balance)')
-                        ->execute([$user['id'], $promo['amount']]);
-                    $walletMessage = 'Промокод активирован.';
+                    $updated = $pdo->prepare('UPDATE promo_codes SET used = used + 1 WHERE id = ? AND used < max_uses');
+                    $updated->execute([$promo['id']]);
+                    if ($updated->rowCount() === 0) {
+                        $walletMessage = t('promo_used');
+                        $pdo->rollBack();
+                    } else {
+                        $pdo->prepare('INSERT INTO payments (user_id, amount, status, provider) VALUES (?, ?, "paid", "promo")')
+                            ->execute([$user['id'], $promo['amount']]);
+                        $pdo->prepare('INSERT INTO balances (user_id, balance) VALUES (?, ?) ON DUPLICATE KEY UPDATE balance = balance + VALUES(balance)')
+                            ->execute([$user['id'], $promo['amount']]);
+                        $pdo->commit();
+                        $walletMessage = t('promo_activated');
+                    }
                 }
             }
         }
     }
 }
 $balance = user_balance((int) $user['id']);
-$payments = db()->prepare('SELECT amount, status, created_at FROM payments WHERE user_id = ? ORDER BY id DESC LIMIT 5');
+$payments = db()->prepare('SELECT amount, status, provider, created_at FROM payments WHERE user_id = ? ORDER BY id DESC LIMIT 5');
 $payments->execute([$user['id']]);
 $withdrawals = db()->prepare('SELECT amount, status, created_at FROM withdrawals WHERE user_id = ? ORDER BY id DESC LIMIT 5');
 $withdrawals->execute([$user['id']]);
@@ -208,6 +220,7 @@ render_header(t('profile_title'));
                         <input type="hidden" name="action" value="promo">
                         <label><?php echo t('promo_code'); ?></label>
                         <input type="text" name="code" required>
+                        <p class="muted small"><?php echo t('promo_format_hint'); ?></p>
                         <button class="btn" type="submit"><?php echo t('promo_apply'); ?></button>
                     </form>
                 </div>
@@ -220,7 +233,10 @@ render_header(t('profile_title'));
                 <div class="card">
                     <strong><?php echo t('history_deposits'); ?></strong>
                     <?php foreach ($payments->fetchAll() as $row): ?>
-                        <p><?php echo $row['created_at']; ?> • <?php echo $row['amount']; ?>₽ • <?php echo $row['status']; ?></p>
+                        <?php
+                        $providerLabel = $row['provider'] === 'promo' ? t('deposit_provider_promo') : t('deposit_provider_sbp');
+                        ?>
+                        <p><?php echo $row['created_at']; ?> • <?php echo $row['amount']; ?>₽ • <?php echo $providerLabel; ?> • <?php echo $row['status']; ?></p>
                     <?php endforeach; ?>
                 </div>
                 <div class="card">
