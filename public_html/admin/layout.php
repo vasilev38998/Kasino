@@ -30,6 +30,7 @@ function admin_header(string $title): void
     echo '</div>';
     echo '<div class="admin-nav-group"><div class="admin-nav-title">Контент</div>';
     admin_nav_link('/admin/slots.php', 'Слоты');
+    admin_nav_link('/admin/cases.php', 'Кейсы');
     admin_nav_link('/admin/cms.php', 'CMS');
     admin_nav_link('/admin/promotions.php', 'Промо');
     echo '</div>';

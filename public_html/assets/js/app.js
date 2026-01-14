@@ -1131,6 +1131,69 @@ minigameButtons.forEach((btn) => {
     });
 });
 
+const caseOpenButtons = document.querySelectorAll('[data-case-open]');
+caseOpenButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const panel = btn.closest('.case-open-panel');
+        if (!panel) return;
+        const caseId = Number(panel.dataset.caseId || 0);
+        const items = JSON.parse(panel.dataset.caseItems || '[]');
+        const reel = panel.querySelector('[data-case-reel]');
+        const track = reel?.querySelector('.case-reel-track');
+        const resultEl = panel.querySelector('[data-case-result]');
+        if (!caseId || !track) return;
+        btn.disabled = true;
+        track.innerHTML = '';
+        const picks = [];
+        for (let i = 0; i < 18; i += 1) {
+            const item = items[Math.floor(Math.random() * items.length)];
+            if (item) {
+                picks.push(item);
+            }
+        }
+        picks.forEach((item) => {
+            const chip = document.createElement('div');
+            chip.className = 'case-chip';
+            chip.innerHTML = `<span>${item.label}</span><strong>${Number(item.amount).toFixed(2)}₽</strong>`;
+            track.appendChild(chip);
+        });
+        reel?.classList.remove('is-spinning');
+        void reel?.offsetWidth;
+        reel?.classList.add('is-spinning');
+        resultEl.textContent = '...';
+
+        fetch('/api/cases.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ case_id: caseId }),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.error) {
+                    resultEl.textContent = data.error;
+                    return;
+                }
+                const win = data.win || 0;
+                const label = data.label || '';
+                const finishChip = document.createElement('div');
+                finishChip.className = 'case-chip is-win';
+                finishChip.innerHTML = `<span>${label}</span><strong>${Number(win).toFixed(2)}₽</strong>`;
+                track.appendChild(finishChip);
+                setTimeout(() => {
+                    resultEl.textContent = `${panel.dataset.caseWin || 'Вы выиграли'}: ${Number(win).toFixed(2)}₽`;
+                }, 1600);
+            })
+            .catch(() => {
+                resultEl.textContent = 'Ошибка запроса.';
+            })
+            .finally(() => {
+                setTimeout(() => {
+                    btn.disabled = false;
+                }, 2000);
+            });
+    });
+});
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js');

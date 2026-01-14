@@ -1660,6 +1660,139 @@ input:focus, textarea:focus, select:focus {
     }
 }
 
+.cases-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.case-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 60%);
+}
+.case-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top, var(--case-accent, #f9b233), transparent 55%);
+    opacity: 0.12;
+    pointer-events: none;
+}
+.case-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.case-badge {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 12px;
+}
+.case-orb {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff, var(--case-accent, #f9b233) 60%);
+    box-shadow: 0 0 20px rgba(249, 178, 51, 0.4);
+    animation: casePulse 3s ease-in-out infinite;
+}
+.case-orb.large {
+    width: 120px;
+    height: 120px;
+}
+.case-detail {
+    display: grid;
+    gap: 24px;
+}
+.case-hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.case-price {
+    margin-top: 12px;
+    font-size: 16px;
+}
+.case-open-panel {
+    padding: 24px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: grid;
+    gap: 16px;
+}
+.case-reel {
+    overflow: hidden;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 16, 27, 0.6);
+}
+.case-reel-track {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    transform: translateX(0);
+    transition: transform 1.6s ease;
+}
+.case-reel.is-spinning .case-reel-track {
+    transform: translateX(-70%);
+}
+.case-chip {
+    min-width: 160px;
+    padding: 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    display: grid;
+    gap: 8px;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.case-chip strong {
+    font-size: 16px;
+}
+.case-chip.is-win {
+    border-color: var(--case-accent, #f9b233);
+    box-shadow: 0 0 16px rgba(249, 178, 51, 0.35);
+}
+.case-result {
+    font-weight: 600;
+}
+.case-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+.case-item {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 12px;
+    display: grid;
+    gap: 6px;
+}
+.case-item-label {
+    font-weight: 600;
+}
+.case-item-amount {
+    color: var(--case-accent, #f9b233);
+}
+.case-item-weight {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+@keyframes casePulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 20px rgba(249, 178, 51, 0.35);
+    }
+    50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 30px rgba(249, 178, 51, 0.5);
+    }
+}
+
 .admin-body {
     background: #0b0b14;
     color: #e7e7f5;

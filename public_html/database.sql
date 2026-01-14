@@ -95,6 +95,38 @@ CREATE TABLE slots (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE cases (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(120) NOT NULL UNIQUE,
+    name VARCHAR(120) NOT NULL,
+    description TEXT,
+    price DECIMAL(12,2) NOT NULL,
+    accent_color VARCHAR(20) DEFAULT '#f9b233',
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE case_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    case_id INT NOT NULL,
+    label VARCHAR(120) NOT NULL,
+    amount DECIMAL(12,2) NOT NULL,
+    weight INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE CASCADE
+);
+
+CREATE TABLE case_open_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    case_id INT NOT NULL,
+    price DECIMAL(12,2) NOT NULL,
+    win DECIMAL(12,2) NOT NULL,
+    meta JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE CASCADE
+);
+
 CREATE TABLE notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NULL,
