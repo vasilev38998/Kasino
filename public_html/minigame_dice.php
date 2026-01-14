@@ -20,8 +20,19 @@ render_header(t('dice_title'));
         <div class="card minigame-controls">
             <label><?php echo t('bet_amount'); ?></label>
             <input type="number" name="bet" class="minigame-bet" value="<?php echo $minBet; ?>" min="<?php echo $minBet; ?>" max="<?php echo $maxBet; ?>">
+            <label>Режим</label>
+            <select class="minigame-dice-mode">
+                <option value="exact">Точная грань x6</option>
+                <option value="dual">Две грани x3</option>
+            </select>
             <label><?php echo t('dice_pick'); ?></label>
             <select class="minigame-dice-pick">
+                <?php for ($i = 1; $i <= 6; $i++): ?>
+                    <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                <?php endfor; ?>
+            </select>
+            <label class="minigame-dice-pick-second-label">Вторая грань</label>
+            <select class="minigame-dice-pick-second">
                 <?php for ($i = 1; $i <= 6; $i++): ?>
                     <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
                 <?php endfor; ?>

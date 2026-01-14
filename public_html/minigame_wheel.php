@@ -19,6 +19,11 @@ render_header(t('wheel_title'));
         <div class="card minigame-controls">
             <label><?php echo t('bet_amount'); ?></label>
             <input type="number" name="bet" class="minigame-bet" value="<?php echo $minBet; ?>" min="<?php echo $minBet; ?>" max="<?php echo $maxBet; ?>">
+            <label>Турнир</label>
+            <select class="minigame-wheel-mode">
+                <option value="classic">Классика</option>
+                <option value="vip">VIP-режим</option>
+            </select>
             <p class="muted"><?php echo t('wheel_hint'); ?></p>
             <button class="btn minigame-play" data-minigame="wheel"><?php echo t('play_now'); ?></button>
         </div>

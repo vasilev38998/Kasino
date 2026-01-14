@@ -66,9 +66,9 @@ render_header(t('plinko_title'));
 
             <div class="plinko-block">
                 <label>Количество пинов</label>
-                <div class="plinko-pins">
+                <div class="plinko-pins" data-plinko-pins>
                     <?php foreach ([8, 9, 10, 11, 12, 13, 14, 15, 16] as $pins): ?>
-                        <button class="btn ghost<?php echo $pins === 16 ? ' is-active' : ''; ?>" type="button"><?php echo $pins; ?></button>
+                        <button class="btn ghost<?php echo $pins === 16 ? ' is-active' : ''; ?>" type="button" data-pins="<?php echo $pins; ?>"><?php echo $pins; ?></button>
                     <?php endforeach; ?>
                 </div>
             </div>

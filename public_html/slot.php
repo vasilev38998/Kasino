@@ -14,12 +14,16 @@ foreach ($slots as $slot) {
 render_header($current['name']);
 $payouts = $current['payouts'] ?? [];
 $labels = $current['symbol_labels'] ?? [];
+$volatility = $current['volatility'] ?? 'medium';
+$featureName = $current['feature_name'] ?? 'Бонус-режим';
+$featureDesc = $current['feature_desc'] ?? 'Соберите символы, чтобы активировать бонус.';
+$bonusHint = $current['bonus_hint'] ?? 'Бонус: 3+ scatter';
 ?>
 <section class="section slot-section theme-<?php echo $current['theme']; ?>" data-slot-theme="<?php echo $current['theme']; ?>">
     <div class="slot-header">
         <div>
             <h2><?php echo $current['name']; ?></h2>
-            <p class="muted">RTP <?php echo $current['rtp']; ?>% • Volatility: High</p>
+            <p class="muted">RTP <?php echo $current['rtp']; ?>% • Volatility: <?php echo ucfirst($volatility); ?></p>
         </div>
         <img src="<?php echo $current['icon']; ?>" alt="<?php echo $current['name']; ?>" class="slot-icon">
     </div>
@@ -27,7 +31,11 @@ $labels = $current['symbol_labels'] ?? [];
         <div class="card slot-controls">
             <div class="slot-info">
                 <span class="badge"><?php echo $current['mechanic']; ?></span>
-                <span class="badge">Бонус: 3+ scatter</span>
+                <span class="badge"><?php echo $bonusHint; ?></span>
+            </div>
+            <div class="slot-feature">
+                <strong><?php echo $featureName; ?></strong>
+                <p class="muted"><?php echo $featureDesc; ?></p>
             </div>
             <button class="btn ghost slot-hints-toggle" type="button" data-slot-hints-toggle>
                 Комбинации и выплаты

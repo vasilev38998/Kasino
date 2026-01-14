@@ -31,6 +31,11 @@ render_header(t('highlow_title'));
                 <option value="high"><?php echo t('high'); ?></option>
                 <option value="low"><?php echo t('low'); ?></option>
             </select>
+            <label>Риск</label>
+            <select class="minigame-highlow-risk">
+                <option value="safe">Безопасно x1.7</option>
+                <option value="risk">Риск x2.4</option>
+            </select>
             <button class="btn minigame-play" data-minigame="highlow"><?php echo t('play_now'); ?></button>
         </div>
     </div>

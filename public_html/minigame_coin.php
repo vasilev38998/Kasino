@@ -24,6 +24,11 @@ render_header(t('coin_title'));
                 <option value="heads"><?php echo t('heads'); ?></option>
                 <option value="tails"><?php echo t('tails'); ?></option>
             </select>
+            <label>Режим</label>
+            <select class="minigame-mode">
+                <option value="classic">Классика x2</option>
+                <option value="boost">Риск x3</option>
+            </select>
             <button class="btn minigame-play" data-minigame="coin"><?php echo t('play_now'); ?></button>
         </div>
     </div>

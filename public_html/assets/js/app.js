@@ -637,6 +637,22 @@ document.querySelectorAll('.treasure-grid').forEach((grid) => {
 });
 
 const minigameButtons = document.querySelectorAll('.minigame-play');
+const diceModeSelect = document.querySelector('.minigame-dice-mode');
+const diceSecondLabel = document.querySelector('.minigame-dice-pick-second-label');
+const diceSecondSelect = document.querySelector('.minigame-dice-pick-second');
+if (diceModeSelect) {
+    const toggleSecondPick = () => {
+        const isDual = diceModeSelect.value === 'dual';
+        if (diceSecondLabel) {
+            diceSecondLabel.style.display = isDual ? 'block' : 'none';
+        }
+        if (diceSecondSelect) {
+            diceSecondSelect.style.display = isDual ? 'block' : 'none';
+        }
+    };
+    diceModeSelect.addEventListener('change', toggleSecondPick);
+    toggleSecondPick();
+}
 minigameButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
         const wrapper = btn.closest('.minigame-layout');
@@ -645,6 +661,7 @@ minigameButtons.forEach((btn) => {
         const game = btn.dataset.minigame;
         if (game === 'coin') {
             const choice = wrapper?.querySelector('.minigame-side')?.value || 'heads';
+            const mode = wrapper?.querySelector('.minigame-mode')?.value || 'classic';
             const coinDisplay = wrapper?.querySelector('[data-coin-display]');
             const coinResult = wrapper?.querySelector('[data-coin-result]');
             const winLabel = wrapper?.dataset.coinWin || 'Победа';
@@ -655,7 +672,7 @@ minigameButtons.forEach((btn) => {
             fetch('/api/minigames.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ game: 'coin', bet, choice }),
+                body: JSON.stringify({ game: 'coin', bet, choice, mode }),
             })
                 .then((res) => res.json())
                 .then((data) => {
@@ -675,16 +692,36 @@ minigameButtons.forEach((btn) => {
             const resultLabel = wrapper?.dataset.plinkoLabel || 'Множитель';
             const slotsEl = wrapper?.querySelector('[data-plinko-slots]');
             const difficultyInputs = wrapper?.querySelectorAll('input[name="plinko_difficulty"]');
+            const pinButtons = wrapper?.querySelectorAll('[data-plinko-pins] [data-pins]');
             const ctx = canvas?.getContext('2d');
-            const plinkoConfigs = {
-                easy: { rows: 6, multipliers: [0.2, 0.5, 0.8, 1, 1.2, 1, 0.8, 0.5, 0.2] },
-                medium: { rows: 8, multipliers: [0, 0.2, 0.5, 0.8, 1, 1.5, 2, 1.5, 1, 0.8, 0.5, 0.2, 0] },
-                hard: { rows: 10, multipliers: [0, 0.1, 0.2, 0.5, 0.8, 1, 1.5, 2, 3, 2, 1.5, 1, 0.8, 0.5, 0.2, 0.1, 0] },
+            const baseMultipliers = {
+                easy: [0.3, 0.5, 0.7, 0.9, 1.1, 1.4, 1.8, 2.4, 1.8, 1.4, 1.1, 0.9, 0.7, 0.5, 0.3],
+                medium: [0, 0.2, 0.4, 0.6, 0.9, 1.3, 1.8, 2.6, 1.8, 1.3, 0.9, 0.6, 0.4, 0.2, 0],
+                hard: [0, 0.1, 0.2, 0.4, 0.7, 1.1, 1.7, 2.8, 4.0, 2.8, 1.7, 1.1, 0.7, 0.4, 0.2, 0.1, 0],
+            };
+            const baseWeights = {
+                easy: [6, 8, 10, 12, 14, 16, 18, 22, 18, 16, 14, 12, 10, 8, 6],
+                medium: [4, 6, 8, 10, 12, 16, 20, 26, 20, 16, 12, 10, 8, 6, 4],
+                hard: [3, 4, 6, 8, 10, 12, 16, 20, 24, 20, 16, 12, 10, 8, 6, 4, 3],
             };
             let pegLayout = [];
             let slotLayout = [];
             const getDifficulty = () =>
                 wrapper?.querySelector('input[name="plinko_difficulty"]:checked')?.value || 'easy';
+            const getPins = () => {
+                const active = wrapper?.querySelector('[data-plinko-pins] .is-active');
+                const pins = Number(active?.dataset.pins || 16);
+                return Number.isNaN(pins) ? 16 : pins;
+            };
+            const buildConfig = (pins, difficulty) => {
+                const slotsCount = Math.max(7, Math.min(15, pins - 1));
+                const baseMulti = baseMultipliers[difficulty] || baseMultipliers.easy;
+                const baseWeight = baseWeights[difficulty] || baseWeights.easy;
+                const offset = Math.floor((baseMulti.length - slotsCount) / 2);
+                const multipliers = baseMulti.slice(offset, offset + slotsCount);
+                const weights = baseWeight.slice(offset, offset + slotsCount);
+                return { rows: slotsCount - 1, multipliers, weights };
+            };
             const renderSlots = (multipliers, activeIndex = null) => {
                 if (!slotsEl) return;
                 slotsEl.innerHTML = '';
@@ -757,7 +794,7 @@ minigameButtons.forEach((btn) => {
             };
             ensureSize();
             const updateBoard = () => {
-                const config = plinkoConfigs[getDifficulty()] || plinkoConfigs.easy;
+                const config = buildConfig(getPins(), getDifficulty());
                 const width = canvas?.clientWidth || canvas?.width || 420;
                 const height = canvas?.clientHeight || canvas?.height || 520;
                 const layout = buildLayout(config.rows, width, height);
@@ -772,10 +809,17 @@ minigameButtons.forEach((btn) => {
                     updateBoard();
                 });
             });
+            pinButtons?.forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    pinButtons.forEach((item) => item.classList.remove('is-active'));
+                    btn.classList.add('is-active');
+                    updateBoard();
+                });
+            });
             fetch('/api/minigames.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ game: 'plinko', bet, difficulty: getDifficulty() }),
+                body: JSON.stringify({ game: 'plinko', bet, difficulty: getDifficulty(), pins: getPins() }),
             })
                 .then((res) => res.json())
                 .then((data) => {
@@ -790,7 +834,7 @@ minigameButtons.forEach((btn) => {
                     if (multipliers.length) {
                         renderSlots(multipliers);
                     } else {
-                        renderSlots(plinkoConfigs[getDifficulty()]?.multipliers || plinkoConfigs.easy.multipliers);
+                        renderSlots(buildConfig(getPins(), getDifficulty()).multipliers);
                     }
                     let x = (canvas?.clientWidth || canvas.width) / 2;
                     let y = 30;
@@ -841,7 +885,7 @@ minigameButtons.forEach((btn) => {
                             const multiplier = data.meta?.multiplier ?? 0;
                             const win = Number(data.win || 0);
                             resultEl.textContent = `${resultLabel} x${multiplier} • Выигрыш ${win}₽`;
-                            const fallbackMultipliers = plinkoConfigs[getDifficulty()]?.multipliers || plinkoConfigs.easy.multipliers;
+                            const fallbackMultipliers = buildConfig(getPins(), getDifficulty()).multipliers;
                             drawBoard(slotIndex);
                             renderSlots(multipliers.length ? multipliers : fallbackMultipliers, slotIndex);
                         }
@@ -853,12 +897,14 @@ minigameButtons.forEach((btn) => {
             const diceDisplay = wrapper?.querySelector('[data-dice-display]');
             const diceResult = wrapper?.querySelector('[data-dice-result]');
             const pick = Number(wrapper?.querySelector('.minigame-dice-pick')?.value || 1);
+            const pickSecond = Number(wrapper?.querySelector('.minigame-dice-pick-second')?.value || 1);
+            const mode = wrapper?.querySelector('.minigame-dice-mode')?.value || 'exact';
             const winLabel = wrapper?.dataset.diceWin || 'Угадали';
             const loseLabel = wrapper?.dataset.diceLose || 'Не угадали';
             fetch('/api/minigames.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ game: 'dice', bet, pick }),
+                body: JSON.stringify({ game: 'dice', bet, pick, pick_second: pickSecond, mode }),
             })
                 .then((res) => res.json())
                 .then((data) => {
@@ -876,6 +922,7 @@ minigameButtons.forEach((btn) => {
             const cardDisplay = wrapper?.querySelector('[data-card-display]');
             const resultEl = wrapper?.querySelector('[data-highlow-result]');
             const pick = wrapper?.querySelector('.minigame-highlow-pick')?.value || 'high';
+            const risk = wrapper?.querySelector('.minigame-highlow-risk')?.value || 'safe';
             const winLabel = wrapper?.dataset.highlowWin || 'Выигрыш';
             const loseLabel = wrapper?.dataset.highlowLose || 'Проигрыш';
             const pushLabel = wrapper?.dataset.highlowPush || 'Возврат ставки';
@@ -902,7 +949,7 @@ minigameButtons.forEach((btn) => {
             fetch('/api/minigames.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ game: 'highlow', bet, pick }),
+                body: JSON.stringify({ game: 'highlow', bet, pick, risk }),
             })
                 .then((res) => res.json())
                 .then((data) => {
@@ -930,11 +977,12 @@ minigameButtons.forEach((btn) => {
             const loseLabel = wrapper?.dataset.treasureLose || 'Пусто';
             const selected = wrapper?.querySelector('.treasure-chest.active') || wrapper?.querySelector('.treasure-chest');
             const pick = Number(selected?.dataset.pick || 1);
+            const mode = wrapper?.querySelector('.minigame-treasure-mode')?.value || 'map';
             wrapper?.querySelectorAll('.treasure-chest').forEach((chest) => chest.classList.remove('open'));
             fetch('/api/minigames.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ game: 'treasure', bet, pick }),
+                body: JSON.stringify({ game: 'treasure', bet, pick, mode }),
             })
                 .then((res) => res.json())
                 .then((data) => {
@@ -955,11 +1003,12 @@ minigameButtons.forEach((btn) => {
             const resultEl = wrapper?.querySelector('[data-wheel-result]');
             const winLabel = wrapper?.dataset.wheelWin || 'Множитель';
             const loseLabel = wrapper?.dataset.wheelLose || 'Пустой сектор';
+            const mode = wrapper?.querySelector('.minigame-wheel-mode')?.value || 'classic';
             wheel?.classList.remove('spinning');
             fetch('/api/minigames.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ game: 'wheel', bet }),
+                body: JSON.stringify({ game: 'wheel', bet, mode }),
             })
                 .then((res) => res.json())
                 .then((data) => {

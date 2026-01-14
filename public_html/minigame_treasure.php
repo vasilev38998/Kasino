@@ -24,6 +24,11 @@ render_header(t('treasure_title'));
         <div class="card minigame-controls">
             <label><?php echo t('bet_amount'); ?></label>
             <input type="number" name="bet" class="minigame-bet" value="<?php echo $minBet; ?>" min="<?php echo $minBet; ?>" max="<?php echo $maxBet; ?>">
+            <label>Режим охоты</label>
+            <select class="minigame-treasure-mode">
+                <option value="map">Карта сокровищ</option>
+                <option value="relic">Древний артефакт</option>
+            </select>
             <p class="muted"><?php echo t('treasure_hint'); ?></p>
             <button class="btn minigame-play" data-minigame="treasure"><?php echo t('play_now'); ?></button>
         </div>

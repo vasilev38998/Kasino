@@ -1221,6 +1221,14 @@ a {
     gap: 10px;
 }
 
+.slot-feature {
+    margin: 12px 0 16px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .slot-buttons {
     display: flex;
     gap: 12px;
