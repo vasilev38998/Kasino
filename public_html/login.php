@@ -17,6 +17,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             db()->prepare('INSERT INTO login_attempts (user_id, ip, success) VALUES (?, ?, ?)')
                 ->execute([$user['id'] ?? null, $_SERVER['REMOTE_ADDR'] ?? '', $success ? 1 : 0]);
             if ($success) {
+                if (empty($user['email_verified_at'])) {
+                    issue_email_verification((int) $user['id'], $user['email']);
+                    $_SESSION['pending_email'] = $user['email'];
+                    header('Location: /verify_email.php');
+                    exit;
+                }
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $user['id'];
                 header('Location: /profile.php');
@@ -40,6 +46,7 @@ render_header(t('login_title'));
         <label><?php echo t('password'); ?></label>
         <input type="password" name="password" required>
         <button class="btn" type="submit"><?php echo t('submit_login'); ?></button>
+        <a class="muted small" href="/forgot_password.php"><?php echo t('forgot_password_link'); ?></a>
     </form>
 </div>
 <?php render_footer(); ?>

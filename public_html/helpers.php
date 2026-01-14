@@ -87,6 +87,67 @@ function require_login(bool $allowDemo = false): void
     }
 }
 
+function site_url(string $path = ''): string
+{
+    $config = require __DIR__ . '/config.php';
+    $base = rtrim($config['site']['base_url'] ?? '', '/');
+    if ($base !== '') {
+        return $base . $path;
+    }
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    return $scheme . '://' . $host . $path;
+}
+
+function send_email_message(string $to, string $subject, string $body): bool
+{
+    $config = require __DIR__ . '/config.php';
+    $from = $config['site']['support_email'] ?? 'support@example.com';
+    $headers = [
+        'From' => $from,
+        'Content-Type' => 'text/plain; charset=UTF-8',
+    ];
+    $formatted = '';
+    foreach ($headers as $key => $value) {
+        $formatted .= $key . ': ' . $value . "\r\n";
+    }
+    return mail($to, $subject, $body, $formatted);
+}
+
+function generate_one_time_code(): string
+{
+    return str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+}
+
+function hash_one_time_code(string $code): string
+{
+    return hash('sha256', $code);
+}
+
+function issue_email_verification(int $userId, string $email): void
+{
+    $code = generate_one_time_code();
+    $hash = hash_one_time_code($code);
+    $expires = date('Y-m-d H:i:s', time() + 30 * 60);
+    db()->prepare('UPDATE users SET email_verification_code = ?, email_verification_expires_at = ? WHERE id = ?')
+        ->execute([$hash, $expires, $userId]);
+    $subject = 'Подтверждение email';
+    $body = "Ваш код подтверждения: {$code}\nКод действует 30 минут.";
+    send_email_message($email, $subject, $body);
+}
+
+function issue_password_reset(int $userId, string $email): void
+{
+    $code = generate_one_time_code();
+    $hash = hash_one_time_code($code);
+    $expires = date('Y-m-d H:i:s', time() + 20 * 60);
+    db()->prepare('UPDATE users SET password_reset_code = ?, password_reset_expires_at = ? WHERE id = ?')
+        ->execute([$hash, $expires, $userId]);
+    $subject = 'Восстановление пароля';
+    $body = "Ваш код для восстановления пароля: {$code}\nКод действует 20 минут.";
+    send_email_message($email, $subject, $body);
+}
+
 function logout(): void
 {
     $_SESSION = [];

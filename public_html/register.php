@@ -32,10 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             $userId = (int) db()->lastInsertId();
             db()->prepare('INSERT INTO balances (user_id, balance) VALUES (?, 0)')->execute([$userId]);
-            session_regenerate_id(true);
-            $_SESSION['user_id'] = $userId;
-            $message = t('registration_success');
-            header('Location: /profile.php');
+            issue_email_verification($userId, $_POST['email']);
+            $_SESSION['pending_email'] = $_POST['email'];
+            header('Location: /verify_email.php');
             exit;
         }
     }
