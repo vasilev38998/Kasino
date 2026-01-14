@@ -70,8 +70,17 @@ function current_user(): ?array
     return $user;
 }
 
-function require_login(): void
+function demo_mode_enabled(): bool
 {
+    $config = require __DIR__ . '/config.php';
+    return !empty($config['site']['demo_mode']);
+}
+
+function require_login(bool $allowDemo = false): void
+{
+    if ($allowDemo && demo_mode_enabled()) {
+        return;
+    }
     if (!current_user()) {
         header('Location: /login.php');
         exit;

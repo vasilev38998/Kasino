@@ -6,6 +6,7 @@ return [
         'base_url' => '',
         'default_language' => 'ru',
         'support_email' => 'support@example.com',
+        'demo_mode' => false,
     ],
     // Подключение к базе данных MySQL
     'db' => [

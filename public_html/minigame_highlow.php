@@ -1,9 +1,10 @@
 <?php
 require __DIR__ . '/helpers.php';
-require_login();
+require_login(true);
 $config = require __DIR__ . '/config.php';
 $minBet = (int) $config['game']['min_bet'];
 $maxBet = (int) $config['game']['max_bet'];
+$isDemo = demo_mode_enabled() && !current_user();
 render_header(t('highlow_title'));
 ?>
 <section class="section">
@@ -40,7 +41,15 @@ render_header(t('highlow_title'));
                 <strong>Высоко/Низко</strong>
                 <p>Безопасный режим возвращает ставку на «7», риск — только победа или проигрыш.</p>
             </div>
-            <button class="btn minigame-play" data-minigame="highlow"><?php echo t('play_now'); ?></button>
+            <?php if ($isDemo): ?>
+                <div class="minigame-note">
+                    <strong><?php echo t('demo_mode_title'); ?></strong>
+                    <p><?php echo t('demo_mode_body'); ?></p>
+                </div>
+            <?php endif; ?>
+            <button class="btn minigame-play" data-minigame="highlow" <?php echo $isDemo ? 'disabled' : ''; ?>>
+                <?php echo t('play_now'); ?>
+            </button>
         </div>
     </div>
 </section>
