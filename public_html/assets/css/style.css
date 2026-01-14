@@ -1729,6 +1729,7 @@ input:focus, textarea:focus, select:focus {
     border-radius: 14px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(15, 16, 27, 0.6);
+    position: relative;
 }
 .case-reel-track {
     display: flex;
@@ -1738,10 +1739,33 @@ input:focus, textarea:focus, select:focus {
     transition: transform 1.6s ease;
 }
 .case-reel.is-spinning .case-reel-track {
-    transform: translateX(-70%);
+    transform: translateX(var(--case-spin-offset, -70%));
+}
+.case-pointer {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 16px solid var(--case-accent, #f9b233);
+    filter: drop-shadow(0 0 8px rgba(249, 178, 51, 0.6));
+    z-index: 2;
+}
+.case-pointer::after {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: -1px;
+    width: 2px;
+    height: 32px;
+    background: linear-gradient(to bottom, var(--case-accent, #f9b233), transparent);
 }
 .case-chip {
     min-width: 160px;
+    width: 180px;
     padding: 14px;
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.08);

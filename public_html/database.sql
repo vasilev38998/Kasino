@@ -127,6 +127,52 @@ CREATE TABLE case_open_logs (
     FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE CASCADE
 );
 
+INSERT INTO cases (slug, name, description, price, accent_color, is_active) VALUES
+    ('crimson-spark', 'Crimson Spark', 'Быстрый кейс с частыми малыми выплатами.', 99, '#ff6b6b', 1),
+    ('neon-drift', 'Neon Drift', 'Сбалансированный набор с редким ускорением.', 249, '#6c63ff', 1),
+    ('pulse-vault', 'Pulse Vault', 'Ставка на редкие всплески и высокий потенциал.', 499, '#00d4ff', 1),
+    ('aurora-core', 'Aurora Core', 'Холодный спектр призов с редкими пиками.', 799, '#7efcff', 1),
+    ('ember-crown', 'Ember Crown', 'Горячий кейс с высокой дисперсией.', 1299, '#f9b233', 1),
+    ('titan-omega', 'Titan Omega', 'Только для смелых: редкие, но мощные награды.', 1999, '#8b6bff', 1);
+
+INSERT INTO case_items (case_id, label, amount, weight) VALUES
+    ((SELECT id FROM cases WHERE slug = 'crimson-spark'), 'Сигнал 30₽', 30, 35),
+    ((SELECT id FROM cases WHERE slug = 'crimson-spark'), 'Импульс 50₽', 50, 25),
+    ((SELECT id FROM cases WHERE slug = 'crimson-spark'), 'Заряд 80₽', 80, 18),
+    ((SELECT id FROM cases WHERE slug = 'crimson-spark'), 'Вспышка 120₽', 120, 12),
+    ((SELECT id FROM cases WHERE slug = 'crimson-spark'), 'Искра 200₽', 200, 7),
+    ((SELECT id FROM cases WHERE slug = 'crimson-spark'), 'Прорыв 500₽', 500, 3),
+    ((SELECT id FROM cases WHERE slug = 'neon-drift'), 'Бонус 100₽', 100, 30),
+    ((SELECT id FROM cases WHERE slug = 'neon-drift'), 'Бонус 150₽', 150, 24),
+    ((SELECT id FROM cases WHERE slug = 'neon-drift'), 'Бонус 200₽', 200, 20),
+    ((SELECT id FROM cases WHERE slug = 'neon-drift'), 'Бонус 300₽', 300, 14),
+    ((SELECT id FROM cases WHERE slug = 'neon-drift'), 'Бонус 450₽', 450, 8),
+    ((SELECT id FROM cases WHERE slug = 'neon-drift'), 'Бонус 800₽', 800, 4),
+    ((SELECT id FROM cases WHERE slug = 'pulse-vault'), 'Кристалл 150₽', 150, 28),
+    ((SELECT id FROM cases WHERE slug = 'pulse-vault'), 'Кристалл 250₽', 250, 22),
+    ((SELECT id FROM cases WHERE slug = 'pulse-vault'), 'Кристалл 350₽', 350, 18),
+    ((SELECT id FROM cases WHERE slug = 'pulse-vault'), 'Кристалл 600₽', 600, 16),
+    ((SELECT id FROM cases WHERE slug = 'pulse-vault'), 'Кристалл 1200₽', 1200, 10),
+    ((SELECT id FROM cases WHERE slug = 'pulse-vault'), 'Кристалл 2500₽', 2500, 6),
+    ((SELECT id FROM cases WHERE slug = 'aurora-core'), 'Север 200₽', 200, 26),
+    ((SELECT id FROM cases WHERE slug = 'aurora-core'), 'Север 400₽', 400, 22),
+    ((SELECT id FROM cases WHERE slug = 'aurora-core'), 'Север 600₽', 600, 18),
+    ((SELECT id FROM cases WHERE slug = 'aurora-core'), 'Север 900₽', 900, 16),
+    ((SELECT id FROM cases WHERE slug = 'aurora-core'), 'Север 1600₽', 1600, 12),
+    ((SELECT id FROM cases WHERE slug = 'aurora-core'), 'Север 3200₽', 3200, 6),
+    ((SELECT id FROM cases WHERE slug = 'ember-crown'), 'Жар 300₽', 300, 26),
+    ((SELECT id FROM cases WHERE slug = 'ember-crown'), 'Жар 550₽', 550, 22),
+    ((SELECT id FROM cases WHERE slug = 'ember-crown'), 'Жар 900₽', 900, 18),
+    ((SELECT id FROM cases WHERE slug = 'ember-crown'), 'Жар 1500₽', 1500, 16),
+    ((SELECT id FROM cases WHERE slug = 'ember-crown'), 'Жар 2600₽', 2600, 12),
+    ((SELECT id FROM cases WHERE slug = 'ember-crown'), 'Жар 5200₽', 5200, 6),
+    ((SELECT id FROM cases WHERE slug = 'titan-omega'), 'Омега 400₽', 400, 24),
+    ((SELECT id FROM cases WHERE slug = 'titan-omega'), 'Омега 800₽', 800, 20),
+    ((SELECT id FROM cases WHERE slug = 'titan-omega'), 'Омега 1400₽', 1400, 18),
+    ((SELECT id FROM cases WHERE slug = 'titan-omega'), 'Омега 2400₽', 2400, 16),
+    ((SELECT id FROM cases WHERE slug = 'titan-omega'), 'Омега 4200₽', 4200, 14),
+    ((SELECT id FROM cases WHERE slug = 'titan-omega'), 'Омега 8500₽', 8500, 8);
+
 CREATE TABLE notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NULL,

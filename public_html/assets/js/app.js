@@ -540,18 +540,32 @@ if (slotPanel) {
     const randomGrid = () =>
         Array.from({ length: idleGrid.length }, () => Array.from({ length: idleGrid[0].length }, randomSymbol));
 
+    const spinPresets = {
+        aurora: { duration: 820, jitter: 70, offsetStep: 6 },
+        cosmic: { duration: 980, jitter: 90, offsetStep: 5 },
+        dragon: { duration: 1150, jitter: 100, offsetStep: 8 },
+        sky: { duration: 880, jitter: 80, offsetStep: 6 },
+        sugar: { duration: 760, jitter: 60, offsetStep: 5 },
+        zenith: { duration: 1040, jitter: 95, offsetStep: 7 },
+        orbit: { duration: 920, jitter: 85, offsetStep: 6 },
+        reef: { duration: 900, jitter: 80, offsetStep: 5 },
+        rift: { duration: 1080, jitter: 100, offsetStep: 7 },
+        ember: { duration: 1020, jitter: 90, offsetStep: 6 },
+    };
+
     const animateSpin = (finalGrid, onComplete) => {
         if (!ctx || !canvas) return;
+        const preset = spinPresets[theme] || spinPresets.aurora;
         const start = performance.now();
-        const duration = 900;
+        const duration = preset.duration;
         const baseOffsets = Array.from({ length: finalGrid.length }, (_, i) => 160 + i * 24);
         let tempGrid = randomGrid();
         const tick = (now) => {
             const t = Math.min((now - start) / duration, 1);
             const eased = 1 - Math.pow(1 - t, 3);
-            const offsets = baseOffsets.map((base, i) => Math.max(0, base * (1 - eased) - i * 6));
+            const offsets = baseOffsets.map((base, i) => Math.max(0, base * (1 - eased) - i * preset.offsetStep));
             if (t < 1) {
-                if (Math.floor(now / 80) % 2 === 0) {
+                if (Math.floor(now / preset.jitter) % 2 === 0) {
                     tempGrid = randomGrid();
                 }
                 drawGrid(tempGrid, offsets);
@@ -1144,22 +1158,9 @@ caseOpenButtons.forEach((btn) => {
         if (!caseId || !track) return;
         btn.disabled = true;
         track.innerHTML = '';
-        const picks = [];
-        for (let i = 0; i < 18; i += 1) {
-            const item = items[Math.floor(Math.random() * items.length)];
-            if (item) {
-                picks.push(item);
-            }
-        }
-        picks.forEach((item) => {
-            const chip = document.createElement('div');
-            chip.className = 'case-chip';
-            chip.innerHTML = `<span>${item.label}</span><strong>${Number(item.amount).toFixed(2)}₽</strong>`;
-            track.appendChild(chip);
-        });
+        track.style.transform = 'translateX(0)';
+        track.style.removeProperty('--case-spin-offset');
         reel?.classList.remove('is-spinning');
-        void reel?.offsetWidth;
-        reel?.classList.add('is-spinning');
         resultEl.textContent = '...';
 
         fetch('/api/cases.php', {
@@ -1175,10 +1176,31 @@ caseOpenButtons.forEach((btn) => {
                 }
                 const win = data.win || 0;
                 const label = data.label || '';
-                const finishChip = document.createElement('div');
-                finishChip.className = 'case-chip is-win';
-                finishChip.innerHTML = `<span>${label}</span><strong>${Number(win).toFixed(2)}₽</strong>`;
-                track.appendChild(finishChip);
+                const picks = [];
+                const totalPicks = 20;
+                const targetIndex = 14;
+                for (let i = 0; i < totalPicks; i += 1) {
+                    const item = items[Math.floor(Math.random() * items.length)];
+                    if (item) {
+                        picks.push(item);
+                    }
+                }
+                picks[targetIndex] = { label, amount: win };
+                track.innerHTML = '';
+                picks.forEach((item, index) => {
+                    const chip = document.createElement('div');
+                    chip.className = index === targetIndex ? 'case-chip is-win' : 'case-chip';
+                    chip.innerHTML = `<span>${item.label}</span><strong>${Number(item.amount).toFixed(2)}₽</strong>`;
+                    track.appendChild(chip);
+                });
+                const chip = track.querySelector('.case-chip');
+                const chipWidth = chip?.offsetWidth || 180;
+                const gap = 12;
+                const reelWidth = reel?.clientWidth || 600;
+                const offset = Math.max(0, targetIndex * (chipWidth + gap) - (reelWidth / 2 - chipWidth / 2));
+                track.style.setProperty('--case-spin-offset', `-${offset}px`);
+                void reel?.offsetWidth;
+                reel?.classList.add('is-spinning');
                 setTimeout(() => {
                     resultEl.textContent = `${panel.dataset.caseWin || 'Вы выиграли'}: ${Number(win).toFixed(2)}₽`;
                 }, 1600);

@@ -31,6 +31,7 @@ render_header($case['name']);
 
     <div class="case-open-panel" data-case-items='<?php echo htmlspecialchars(json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES); ?>' data-case-id="<?php echo $case['id']; ?>" data-case-win="<?php echo t('case_win'); ?>">
         <div class="case-reel" data-case-reel>
+            <div class="case-pointer" aria-hidden="true"></div>
             <div class="case-reel-track"></div>
         </div>
         <div class="case-result" data-case-result><?php echo t('case_contains'); ?></div>
