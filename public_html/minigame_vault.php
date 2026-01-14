@@ -23,14 +23,14 @@ render_header(t('vault_title'));
         <div class="card minigame-controls">
             <label><?php echo t('bet_amount'); ?></label>
             <input type="number" name="bet" class="minigame-bet" value="<?php echo $minBet; ?>" min="<?php echo $minBet; ?>" max="<?php echo $maxBet; ?>">
-            <label>Протокол</label>
+            <label><?php echo t('vault_protocol_label'); ?></label>
             <select class="minigame-vault-mode">
-                <option value="core">Ядро х1.8</option>
-                <option value="pulse">Импульс х3.2</option>
+                <option value="core"><?php echo t('vault_mode_core'); ?></option>
+                <option value="pulse"><?php echo t('vault_mode_pulse'); ?></option>
             </select>
             <div class="minigame-note">
-                <strong>Кристальный сейф</strong>
-                <p>Ядро даёт стабильный множитель, импульс — редкие всплески крупного выигрыша.</p>
+                <strong><?php echo t('vault_note_title'); ?></strong>
+                <p><?php echo t('vault_note_body'); ?></p>
             </div>
             <button class="btn minigame-play" data-minigame="vault"><?php echo t('play_now'); ?></button>
         </div>
