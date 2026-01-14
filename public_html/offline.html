@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kasino Lux Offline</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+  <div class="form-card">
+    <h1 data-i18n="offline_title">Нет подключения</h1>
+    <p data-i18n="offline_text">Проверьте интернет и повторите попытку.</p>
+  </div>
+  <script>
+    const dictionary = {
+      ru: { offline_title: 'Нет подключения', offline_text: 'Проверьте интернет и повторите попытку.' },
+      en: { offline_title: 'Offline', offline_text: 'Check your connection and try again.' }
+    };
+    const lang = localStorage.getItem('lang') || 'ru';
+    document.querySelectorAll('[data-i18n]').forEach((node) => {
+      const key = node.dataset.i18n;
+      if (dictionary[lang] && dictionary[lang][key]) {
+        node.textContent = dictionary[lang][key];
+      }
+    });
+  </script>
+</body>
+</html>
