@@ -244,6 +244,67 @@ CREATE TABLE login_attempts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE missions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    description TEXT NOT NULL,
+    type VARCHAR(40) NOT NULL,
+    target_value DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    reward_amount DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    reward_type VARCHAR(20) NOT NULL DEFAULT 'balance',
+    period VARCHAR(20) NOT NULL DEFAULT 'daily',
+    starts_at DATETIME NULL,
+    ends_at DATETIME NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_missions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    mission_id INT NOT NULL,
+    progress DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    period_key VARCHAR(20) NOT NULL DEFAULT 'all',
+    completed_at DATETIME NULL,
+    claimed_at DATETIME NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_user_mission (user_id, mission_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (mission_id) REFERENCES missions(id) ON DELETE CASCADE
+);
+
+CREATE TABLE tournaments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(140) NOT NULL,
+    description TEXT NOT NULL,
+    game_type VARCHAR(20) NOT NULL DEFAULT 'slots',
+    metric VARCHAR(20) NOT NULL DEFAULT 'win',
+    entry_fee DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    prize_pool DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    starts_at DATETIME NOT NULL,
+    ends_at DATETIME NOT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE tournament_entries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tournament_id INT NOT NULL,
+    user_id INT NOT NULL,
+    points DECIMAL(14, 2) NOT NULL DEFAULT 0,
+    best_win DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    spins INT NOT NULL DEFAULT 0,
+    reward_amount DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    reward_claimed_at DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_tournament_entry (tournament_id, user_id),
+    FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE settings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
@@ -278,6 +339,18 @@ INSERT INTO settings (name, value) VALUES
 ('promo_codes_desc', 'Активируйте промокоды для бонусов.'),
 ('promo_codes_list', 'LUX100, NEON50, WEEKEND');
 
+INSERT INTO missions (name, description, type, target_value, reward_amount, period, starts_at, ends_at) VALUES
+('Утренний спринт', 'Сделайте 12 спинов в слотах за день.', 'slots_spins', 12, 60, 'daily', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY)),
+('Гонка по ставкам', 'Наберите 5000₽ общей ставки за неделю.', 'slots_bet', 5000, 300, 'weekly', NOW(), DATE_ADD(NOW(), INTERVAL 45 DAY)),
+('Мини-игровой марафон', 'Сыграйте 6 мини-игр в день.', 'minigame_plays', 6, 140, 'daily', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY)),
+('Вин-рывок', 'Соберите 1500₽ выигрыша в слотах за неделю.', 'slots_win', 1500, 420, 'weekly', NOW(), DATE_ADD(NOW(), INTERVAL 45 DAY)),
+('Ставка на удачу', 'Выиграйте 600₽ в мини-играх за неделю.', 'minigame_win', 600, 220, 'weekly', NOW(), DATE_ADD(NOW(), INTERVAL 45 DAY));
+
+INSERT INTO tournaments (name, description, game_type, metric, entry_fee, prize_pool, starts_at, ends_at) VALUES
+('Небесный спринт', 'Лучшие выигрыши в слотах за неделю. Считаем суммарный выигрыш.', 'slots', 'win', 0, 15000, NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY)),
+('Золотой оборот', 'Турнир по обороту ставок в слотах. Больше ставок — выше место.', 'slots', 'bet', 50, 20000, DATE_ADD(NOW(), INTERVAL -1 DAY), DATE_ADD(NOW(), INTERVAL 10 DAY)),
+('Лига мини-игр', 'Побеждает тот, кто сыграет больше мини-игр.', 'minigames', 'spins', 0, 8000, NOW(), DATE_ADD(NOW(), INTERVAL 5 DAY));
+
 INSERT INTO staff_users (email, password_hash, role) VALUES
 ('admin@kasino.local', '$2y$12$UrP0yDk6/P62gYE3vAqfbecDkebaAutmKbie3U1yGPz6xups6elX2', 'admin');
 
@@ -295,7 +368,9 @@ INSERT INTO staff_permissions (staff_id, permission) VALUES
 (1, 'notifications'),
 (1, 'support'),
 (1, 'cms'),
-(1, 'settings');
+(1, 'settings'),
+(1, 'missions'),
+(1, 'tournaments');
 
 INSERT INTO slots (slug, name, rtp, volatility) VALUES
 ('aurora-cascade', 'Aurora Cascade', 96.20, 'high'),

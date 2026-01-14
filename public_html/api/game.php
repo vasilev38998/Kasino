@@ -388,6 +388,13 @@ db()->prepare('INSERT INTO game_logs (user_id, slot, bet, win, meta) VALUES (?, 
 db()->prepare('UPDATE users SET total_wins = total_wins + ? WHERE id = ?')
     ->execute([$win, $user['id']]);
 
+update_mission_progress((int) $user['id'], 'slots_spins', 1);
+update_mission_progress((int) $user['id'], 'slots_bet', $bet);
+if ($win > 0) {
+    update_mission_progress((int) $user['id'], 'slots_win', $win);
+}
+update_tournament_progress((int) $user['id'], 'slots', $bet, $win);
+
 json_response([
     'win' => $win,
     'grid' => $grid,

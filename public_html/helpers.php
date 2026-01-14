@@ -939,3 +939,227 @@ function user_balance(int $userId): float
     $row = $stmt->fetch();
     return $row ? (float) $row['balance'] : 0.0;
 }
+
+function mission_period_key(string $period): string
+{
+    return match ($period) {
+        'daily' => date('Y-m-d'),
+        'weekly' => date('o-W'),
+        default => 'all',
+    };
+}
+
+function active_missions(): array
+{
+    $stmt = db()->query("SELECT * FROM missions WHERE is_active = 1 AND (starts_at IS NULL OR starts_at <= NOW()) AND (ends_at IS NULL OR ends_at >= NOW()) ORDER BY id DESC");
+    return $stmt->fetchAll();
+}
+
+function mission_progress_map(int $userId, array $missionIds): array
+{
+    if (!$missionIds) {
+        return [];
+    }
+    $placeholders = implode(',', array_fill(0, count($missionIds), '?'));
+    $stmt = db()->prepare("SELECT * FROM user_missions WHERE user_id = ? AND mission_id IN ({$placeholders})");
+    $stmt->execute(array_merge([$userId], $missionIds));
+    $rows = $stmt->fetchAll();
+    $map = [];
+    foreach ($rows as $row) {
+        $map[(int) $row['mission_id']] = $row;
+    }
+    return $map;
+}
+
+function normalize_mission_progress(array $mission, ?array $row): array
+{
+    if (!$row) {
+        return ['progress' => 0, 'completed_at' => null, 'claimed_at' => null, 'period_key' => mission_period_key($mission['period'])];
+    }
+    if ($mission['period'] !== 'once') {
+        $currentKey = mission_period_key($mission['period']);
+        if ($row['period_key'] !== $currentKey) {
+            return ['progress' => 0, 'completed_at' => null, 'claimed_at' => null, 'period_key' => $currentKey];
+        }
+    }
+    return $row;
+}
+
+function update_mission_progress(int $userId, string $type, float $amount): void
+{
+    if ($amount <= 0) {
+        return;
+    }
+    $stmt = db()->prepare("SELECT * FROM missions WHERE is_active = 1 AND type = ? AND (starts_at IS NULL OR starts_at <= NOW()) AND (ends_at IS NULL OR ends_at >= NOW())");
+    $stmt->execute([$type]);
+    $missions = $stmt->fetchAll();
+    if (!$missions) {
+        return;
+    }
+    foreach ($missions as $mission) {
+        $periodKey = mission_period_key($mission['period']);
+        $progressStmt = db()->prepare('SELECT * FROM user_missions WHERE user_id = ? AND mission_id = ?');
+        $progressStmt->execute([$userId, $mission['id']]);
+        $row = $progressStmt->fetch();
+        $progress = $row ? (float) $row['progress'] : 0.0;
+        $completedAt = $row['completed_at'] ?? null;
+        $claimedAt = $row['claimed_at'] ?? null;
+        if ($row && $mission['period'] !== 'once' && $row['period_key'] !== $periodKey) {
+            $progress = 0.0;
+            $completedAt = null;
+            $claimedAt = null;
+        }
+        $progress += $amount;
+        if ($progress >= (float) $mission['target_value']) {
+            if (!$completedAt) {
+                $completedAt = date('Y-m-d H:i:s');
+            }
+        }
+        if ($row) {
+            db()->prepare('UPDATE user_missions SET progress = ?, period_key = ?, completed_at = ?, claimed_at = ? WHERE id = ?')
+                ->execute([$progress, $periodKey, $completedAt, $claimedAt, $row['id']]);
+        } else {
+            db()->prepare('INSERT INTO user_missions (user_id, mission_id, progress, period_key, completed_at, claimed_at) VALUES (?, ?, ?, ?, ?, ?)')
+                ->execute([$userId, $mission['id'], $progress, $periodKey, $completedAt, $claimedAt]);
+        }
+    }
+}
+
+function claim_mission_reward(int $userId, int $missionId): array
+{
+    $stmt = db()->prepare('SELECT missions.*, user_missions.id AS progress_id, user_missions.progress, user_missions.completed_at, user_missions.claimed_at, user_missions.period_key FROM missions LEFT JOIN user_missions ON missions.id = user_missions.mission_id AND user_missions.user_id = ? WHERE missions.id = ?');
+    $stmt->execute([$userId, $missionId]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        return ['ok' => false, 'message' => 'Миссия не найдена.'];
+    }
+    $normalized = normalize_mission_progress($row, $row['progress_id'] ? $row : null);
+    if (!$normalized['completed_at'] || (float) $normalized['progress'] < (float) $row['target_value']) {
+        return ['ok' => false, 'message' => 'Миссия ещё не выполнена.'];
+    }
+    if ($normalized['claimed_at']) {
+        return ['ok' => false, 'message' => 'Награда уже получена.'];
+    }
+    $reward = (float) $row['reward_amount'];
+    db()->prepare('UPDATE balances SET balance = balance + ? WHERE user_id = ?')
+        ->execute([$reward, $userId]);
+    if ($row['progress_id']) {
+        db()->prepare('UPDATE user_missions SET claimed_at = ?, period_key = ? WHERE id = ?')
+            ->execute([date('Y-m-d H:i:s'), mission_period_key($row['period']), $row['progress_id']]);
+    } else {
+        db()->prepare('INSERT INTO user_missions (user_id, mission_id, progress, period_key, completed_at, claimed_at) VALUES (?, ?, ?, ?, ?, ?)')
+            ->execute([$userId, $missionId, $row['target_value'], mission_period_key($row['period']), date('Y-m-d H:i:s'), date('Y-m-d H:i:s')]);
+    }
+    return ['ok' => true, 'message' => 'Награда начислена.'];
+}
+
+function active_tournaments(): array
+{
+    $stmt = db()->query("SELECT * FROM tournaments WHERE is_active = 1 ORDER BY starts_at DESC");
+    return $stmt->fetchAll();
+}
+
+function tournament_entry(int $userId, int $tournamentId): ?array
+{
+    $stmt = db()->prepare('SELECT * FROM tournament_entries WHERE user_id = ? AND tournament_id = ?');
+    $stmt->execute([$userId, $tournamentId]);
+    return $stmt->fetch() ?: null;
+}
+
+function update_tournament_progress(int $userId, string $gameType, float $bet, float $win): void
+{
+    $stmt = db()->prepare("SELECT * FROM tournaments WHERE is_active = 1 AND starts_at <= NOW() AND ends_at >= NOW() AND (game_type = ? OR game_type = 'any')");
+    $stmt->execute([$gameType]);
+    $tournaments = $stmt->fetchAll();
+    if (!$tournaments) {
+        return;
+    }
+    foreach ($tournaments as $tournament) {
+        $entry = tournament_entry($userId, (int) $tournament['id']);
+        if (!$entry && (float) $tournament['entry_fee'] > 0) {
+            continue;
+        }
+        if (!$entry) {
+            db()->prepare('INSERT INTO tournament_entries (tournament_id, user_id, points, best_win, spins) VALUES (?, ?, 0, 0, 0)')
+                ->execute([$tournament['id'], $userId]);
+            $entry = tournament_entry($userId, (int) $tournament['id']);
+        }
+        $pointsAdd = 0.0;
+        if ($tournament['metric'] === 'spins') {
+            $pointsAdd = 1.0;
+        } elseif ($tournament['metric'] === 'bet') {
+            $pointsAdd = $bet;
+        } elseif ($tournament['metric'] === 'win') {
+            $pointsAdd = $win;
+        }
+        $newPoints = (float) $entry['points'] + $pointsAdd;
+        $bestWin = max((float) $entry['best_win'], $win);
+        $spins = (int) $entry['spins'] + 1;
+        db()->prepare('UPDATE tournament_entries SET points = ?, best_win = ?, spins = ? WHERE id = ?')
+            ->execute([$newPoints, $bestWin, $spins, $entry['id']]);
+    }
+}
+
+function tournament_leaderboard(int $tournamentId, int $limit = 5): array
+{
+    $stmt = db()->prepare('SELECT tournament_entries.*, users.nickname FROM tournament_entries JOIN users ON users.id = tournament_entries.user_id WHERE tournament_id = ? ORDER BY points DESC, best_win DESC, spins DESC LIMIT ?');
+    $stmt->execute([$tournamentId, $limit]);
+    return $stmt->fetchAll();
+}
+
+function tournament_rank(int $tournamentId, int $userId): ?int
+{
+    $stmt = db()->prepare('SELECT user_id, points, best_win, spins FROM tournament_entries WHERE tournament_id = ? ORDER BY points DESC, best_win DESC, spins DESC');
+    $stmt->execute([$tournamentId]);
+    $rank = 0;
+    while ($row = $stmt->fetch()) {
+        $rank++;
+        if ((int) $row['user_id'] === $userId) {
+            return $rank;
+        }
+    }
+    return null;
+}
+
+function tournament_prize_for_rank(float $pool, int $rank): float
+{
+    return match ($rank) {
+        1 => $pool * 0.5,
+        2 => $pool * 0.3,
+        3 => $pool * 0.2,
+        default => 0.0,
+    };
+}
+
+function claim_tournament_reward(int $userId, int $tournamentId): array
+{
+    $entry = tournament_entry($userId, $tournamentId);
+    if (!$entry) {
+        return ['ok' => false, 'message' => 'Вы не участвуете в турнире.'];
+    }
+    if ($entry['reward_claimed_at']) {
+        return ['ok' => false, 'message' => 'Награда уже получена.'];
+    }
+    $stmt = db()->prepare('SELECT * FROM tournaments WHERE id = ?');
+    $stmt->execute([$tournamentId]);
+    $tournament = $stmt->fetch();
+    if (!$tournament) {
+        return ['ok' => false, 'message' => 'Турнир не найден.'];
+    }
+    if (strtotime($tournament['ends_at']) > time()) {
+        return ['ok' => false, 'message' => 'Турнир ещё не завершён.'];
+    }
+    $rank = tournament_rank($tournamentId, $userId);
+    if (!$rank || $rank > 3) {
+        return ['ok' => false, 'message' => 'Вы не в призовой зоне.'];
+    }
+    $reward = round(tournament_prize_for_rank((float) $tournament['prize_pool'], $rank), 2);
+    if ($reward <= 0) {
+        return ['ok' => false, 'message' => 'Награда недоступна.'];
+    }
+    db()->prepare('UPDATE balances SET balance = balance + ? WHERE user_id = ?')
+        ->execute([$reward, $userId]);
+    db()->prepare('UPDATE tournament_entries SET reward_amount = ?, reward_claimed_at = ? WHERE id = ?')
+        ->execute([$reward, date('Y-m-d H:i:s'), $entry['id']]);
+    return ['ok' => true, 'message' => 'Награда начислена.'];
+}
