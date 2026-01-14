@@ -8,6 +8,17 @@ return [
         'support_email' => 'support@example.com',
         'demo_mode' => false,
     ],
+    // Настройки SMTP (опционально)
+    'mail' => [
+        'enabled' => false,
+        'host' => 'smtp.example.com',
+        'port' => 587,
+        'encryption' => 'tls',
+        'username' => 'smtp_user',
+        'password' => 'smtp_password',
+        'from_email' => 'support@example.com',
+        'from_name' => 'Kasino Lux',
+    ],
     // Подключение к базе данных MySQL
     'db' => [
         'host' => 'localhost',

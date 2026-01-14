@@ -99,9 +99,138 @@ function site_url(string $path = ''): string
     return $scheme . '://' . $host . $path;
 }
 
+function format_email_address(string $email, ?string $name = null): string
+{
+    $email = trim($email);
+    if ($name) {
+        $safe = trim($name);
+        return sprintf('"%s" <%s>', addcslashes($safe, '"\\'), $email);
+    }
+    return $email;
+}
+
+function smtp_send_message(array $smtp, string $to, string $subject, string $body): bool
+{
+    $host = $smtp['host'] ?? '';
+    if ($host === '') {
+        return false;
+    }
+    $port = (int) ($smtp['port'] ?? 587);
+    $encryption = $smtp['encryption'] ?? 'tls';
+    $remote = $encryption === 'ssl' ? "ssl://{$host}:{$port}" : "{$host}:{$port}";
+    $socket = stream_socket_client($remote, $errno, $errstr, 10);
+    if (!$socket) {
+        return false;
+    }
+
+    $read = function () use ($socket): string {
+        $data = '';
+        while (($line = fgets($socket, 515)) !== false) {
+            $data .= $line;
+            if (preg_match('/^\d{3} /', $line)) {
+                break;
+            }
+        }
+        return $data;
+    };
+    $send = function (string $command) use ($socket): void {
+        fwrite($socket, $command . "\r\n");
+    };
+    $expect = function (string $code) use ($read): bool {
+        $response = $read();
+        return str_starts_with($response, $code);
+    };
+
+    $read();
+    $send('EHLO kasino.local');
+    if (!$expect('250')) {
+        fclose($socket);
+        return false;
+    }
+    if ($encryption === 'tls') {
+        $send('STARTTLS');
+        if (!$expect('220')) {
+            fclose($socket);
+            return false;
+        }
+        if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+            fclose($socket);
+            return false;
+        }
+        $send('EHLO kasino.local');
+        if (!$expect('250')) {
+            fclose($socket);
+            return false;
+        }
+    }
+
+    $username = (string) ($smtp['username'] ?? '');
+    $password = (string) ($smtp['password'] ?? '');
+    if ($username !== '' && $password !== '') {
+        $send('AUTH LOGIN');
+        if (!$expect('334')) {
+            fclose($socket);
+            return false;
+        }
+        $send(base64_encode($username));
+        if (!$expect('334')) {
+            fclose($socket);
+            return false;
+        }
+        $send(base64_encode($password));
+        if (!$expect('235')) {
+            fclose($socket);
+            return false;
+        }
+    }
+
+    $fromEmail = $smtp['from_email'] ?? ($smtp['username'] ?? $to);
+    $fromName = $smtp['from_name'] ?? null;
+    $send('MAIL FROM:<' . $fromEmail . '>');
+    if (!$expect('250')) {
+        fclose($socket);
+        return false;
+    }
+    $send('RCPT TO:<' . $to . '>');
+    if (!$expect('250')) {
+        fclose($socket);
+        return false;
+    }
+    $send('DATA');
+    if (!$expect('354')) {
+        fclose($socket);
+        return false;
+    }
+
+    $headers = [
+        'From' => format_email_address($fromEmail, $fromName),
+        'To' => $to,
+        'Subject' => $subject,
+        'MIME-Version' => '1.0',
+        'Content-Type' => 'text/plain; charset=UTF-8',
+    ];
+    $message = '';
+    foreach ($headers as $key => $value) {
+        $message .= $key . ': ' . $value . "\r\n";
+    }
+    $safeBody = str_replace(["\r\n", "\r"], "\n", $body);
+    $safeBody = str_replace("\n", "\r\n", $safeBody);
+    $message .= "\r\n" . $safeBody;
+    $message = str_replace("\r\n.\r\n", "\r\n..\r\n", $message);
+    $send($message . "\r\n.");
+    $result = $expect('250');
+    $send('QUIT');
+    fclose($socket);
+    return $result;
+}
+
 function send_email_message(string $to, string $subject, string $body): bool
 {
     $config = require __DIR__ . '/config.php';
+    $mail = $config['mail'] ?? [];
+    if (!empty($mail['enabled'])) {
+        return smtp_send_message($mail, $to, $subject, $body);
+    }
     $from = $config['site']['support_email'] ?? 'support@example.com';
     $headers = [
         'From' => $from,
