@@ -17,7 +17,7 @@ render_header(t('plinko_title'));
             <span class="badge">Сессия: online</span>
         </div>
     </div>
-    <div class="plinko-shell">
+    <div class="plinko-shell minigame-layout" data-plinko-game data-plinko-label="<?php echo t('plinko_result'); ?>">
         <div class="card plinko-sidebar">
             <div class="plinko-tabs">
                 <button class="plinko-tab is-active" type="button">Ручные ставки</button>
@@ -77,7 +77,7 @@ render_header(t('plinko_title'));
             <p class="muted plinko-hint"><?php echo t('plinko_hint'); ?></p>
         </div>
 
-        <div class="card plinko-board" data-plinko-game data-plinko-label="<?php echo t('plinko_result'); ?>">
+        <div class="card plinko-board">
             <div class="plinko-panel">
                 <canvas class="plinko-canvas" width="520" height="520"></canvas>
                 <div class="plinko-slots" data-plinko-slots></div>
