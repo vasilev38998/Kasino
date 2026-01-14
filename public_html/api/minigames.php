@@ -187,6 +187,37 @@ if ($game === 'coin') {
         'slices' => $multipliers,
         'mode' => $mode,
     ];
+} elseif ($game === 'vault') {
+    $pick = (int) ($input['pick'] ?? 1);
+    if ($pick < 1 || $pick > 4) {
+        json_response(['error' => 'Некорректный выбор.'], 400);
+    }
+    $mode = $input['mode'] ?? 'core';
+    if ($mode === 'pulse') {
+        $multipliers = [0, 0.6, 1.4, 3.2, 5.0];
+        $weights = [30, 26, 20, 16, 8];
+    } else {
+        $multipliers = [0.4, 0.8, 1.2, 1.8, 2.4];
+        $weights = [20, 24, 26, 20, 10];
+    }
+    $total = array_sum($weights);
+    $roll = random_int(1, $total);
+    $current = 0;
+    $index = 0;
+    foreach ($weights as $i => $weight) {
+        $current += $weight;
+        if ($roll <= $current) {
+            $index = $i;
+            break;
+        }
+    }
+    $multiplier = $multipliers[$index];
+    $win = $bet * $multiplier;
+    $meta = [
+        'pick' => $pick,
+        'multiplier' => $multiplier,
+        'mode' => $mode,
+    ];
 } else {
     json_response(['error' => 'Неизвестная игра.'], 400);
 }

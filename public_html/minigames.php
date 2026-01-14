@@ -42,6 +42,12 @@ render_header(t('minigames_title'));
             <p><?php echo t('wheel_subtitle'); ?></p>
             <a class="btn" href="/minigame_wheel.php"><?php echo t('play_now'); ?></a>
         </div>
+        <div class="card minigame-card">
+            <div class="minigame-icon vault"></div>
+            <h3><?php echo t('vault_title'); ?></h3>
+            <p><?php echo t('vault_subtitle'); ?></p>
+            <a class="btn" href="/minigame_vault.php"><?php echo t('play_now'); ?></a>
+        </div>
     </div>
 </section>
 <?php render_footer(); ?>

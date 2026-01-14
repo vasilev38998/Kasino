@@ -218,6 +218,20 @@ if (slotPanel) {
                 { id: 'rift_spike', label: 'Шип', shape: 'prism', colors: ['#ff6ad1', '#7a5bff'] },
             ],
         },
+        ember: {
+            bg: '#1a0d0f',
+            accent: '#ff7a3c',
+            symbols: [
+                { id: 'ember_core', label: 'Ядро', shape: 'orb', colors: ['#ffd36a', '#ff7a3c'] },
+                { id: 'ember_flare', label: 'Вспышка', shape: 'star', colors: ['#ff9f6b', '#ff4b2b'] },
+                { id: 'ember_blade', label: 'Клинок', shape: 'prism', colors: ['#ffb347', '#ff6a3d'] },
+                { id: 'ember_ash', label: 'Пепел', shape: 'diamond', colors: ['#b09bff', '#ff7bd9'] },
+                { id: 'ember_orb', label: 'Сфера', shape: 'orb', colors: ['#ff6ad1', '#ff7a3c'] },
+                { id: 'ember_spike', label: 'Шип', shape: 'bolt', colors: ['#ff7a3c', '#ffb347'] },
+                { id: 'ember_chain', label: 'Цепь', shape: 'ring', colors: ['#ffd36a', '#ff6a3d'] },
+                { id: 'ember_crown', label: 'Корона', shape: 'crown', colors: ['#ffd36a', '#ff9f6b'] },
+            ],
+        },
     };
 
     const getTheme = () => themes[theme] || themes.aurora;
@@ -647,6 +661,20 @@ document.querySelectorAll('.treasure-grid').forEach((grid) => {
     }
 });
 
+document.querySelectorAll('.vault-shard').forEach((shard) => {
+    shard.addEventListener('click', () => {
+        const wrapper = shard.closest('.vault-grid');
+        wrapper?.querySelectorAll('.vault-shard').forEach((item) => item.classList.remove('active'));
+        shard.classList.add('active');
+    });
+});
+
+document.querySelectorAll('.vault-grid').forEach((grid) => {
+    if (!grid.querySelector('.vault-shard.active')) {
+        grid.querySelector('.vault-shard')?.classList.add('active');
+    }
+});
+
 const minigameButtons = document.querySelectorAll('.minigame-play');
 const diceModeSelect = document.querySelector('.minigame-dice-mode');
 const diceSecondLabel = document.querySelector('.minigame-dice-pick-second-label');
@@ -1035,6 +1063,31 @@ minigameButtons.forEach((btn) => {
                         return;
                     }
                     selected?.classList.add('open');
+                    const multiplier = Number(data.meta?.multiplier || 0);
+                    const win = Number(data.win || 0);
+                    resultEl.textContent = win > 0
+                        ? `${winLabel}: x${multiplier} • ${win}₽`
+                        : `${loseLabel} • x${multiplier}`;
+                });
+        }
+        if (game === 'vault') {
+            const resultEl = wrapper?.querySelector('[data-vault-result]');
+            const winLabel = wrapper?.dataset.vaultWin || 'Кристалл';
+            const loseLabel = wrapper?.dataset.vaultLose || 'Пусто';
+            const selected = wrapper?.querySelector('.vault-shard.active') || wrapper?.querySelector('.vault-shard');
+            const pick = Number(selected?.dataset.pick || 1);
+            const mode = wrapper?.querySelector('.minigame-vault-mode')?.value || 'core';
+            fetch('/api/minigames.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'vault', bet, pick, mode }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.error) {
+                        resultEl.textContent = data.error;
+                        return;
+                    }
                     const multiplier = Number(data.meta?.multiplier || 0);
                     const win = Number(data.win || 0);
                     resultEl.textContent = win > 0

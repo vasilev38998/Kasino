@@ -221,4 +221,5 @@ INSERT INTO slots (slug, name, rtp, volatility) VALUES
 ('sky-titans', 'Sky Titans', 96.40, 'high'),
 ('sugar-bloom', 'Sugar Bloom', 96.10, 'medium'),
 ('zenith-gems', 'Zenith Gems', 96.30, 'high'),
-('orbit-jewels', 'Orbit Jewels', 95.90, 'medium');
+('orbit-jewels', 'Orbit Jewels', 95.90, 'medium'),
+('ember-eclipse', 'Ember Eclipse', 96.10, 'high');
