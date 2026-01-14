@@ -11,20 +11,61 @@ $stats = [
 $latestGames = db()->query('SELECT slot, bet, win, created_at FROM game_logs ORDER BY id DESC LIMIT 10')->fetchAll();
 admin_header('Дашборд');
 ?>
-<div class="section">
-    <h2>Дашборд</h2>
-    <div class="grid-two">
-        <div class="card">Пользователи: <?php echo (int) $stats['users']; ?></div>
-        <div class="card">Поступления: <?php echo number_format($stats['payments'], 2, '.', ' '); ?>₽</div>
-        <div class="card">Выводы: <?php echo number_format($stats['withdrawals'], 2, '.', ' '); ?>₽</div>
-        <div class="card">Ставки: <?php echo number_format($stats['bets'], 2, '.', ' '); ?>₽</div>
-        <div class="card">Выигрыши: <?php echo number_format($stats['wins'], 2, '.', ' '); ?>₽</div>
+<section class="admin-section">
+    <div class="admin-section-header">
+        <div>
+            <h2>Дашборд</h2>
+            <p class="muted">Сводка по активности, платежам и ставкам.</p>
+        </div>
+        <div class="admin-actions">
+            <a class="btn" href="/admin/users.php">Перейти к пользователям</a>
+            <a class="btn ghost" href="/admin/support.php">Открыть поддержку</a>
+        </div>
     </div>
-    <h3 class="section-subtitle">Последние спины</h3>
-    <div class="cards">
+    <div class="admin-metrics">
+        <div class="admin-metric">
+            <span>Пользователи</span>
+            <strong><?php echo (int) $stats['users']; ?></strong>
+        </div>
+        <div class="admin-metric">
+            <span>Поступления</span>
+            <strong><?php echo number_format($stats['payments'], 2, '.', ' '); ?>₽</strong>
+        </div>
+        <div class="admin-metric">
+            <span>Выводы</span>
+            <strong><?php echo number_format($stats['withdrawals'], 2, '.', ' '); ?>₽</strong>
+        </div>
+        <div class="admin-metric">
+            <span>Ставки</span>
+            <strong><?php echo number_format($stats['bets'], 2, '.', ' '); ?>₽</strong>
+        </div>
+        <div class="admin-metric">
+            <span>Выигрыши</span>
+            <strong><?php echo number_format($stats['wins'], 2, '.', ' '); ?>₽</strong>
+        </div>
+    </div>
+</section>
+
+<section class="admin-section">
+    <div class="admin-section-header">
+        <h3>Последние спины</h3>
+        <span class="muted">Последние 10 записей</span>
+    </div>
+    <div class="admin-table card">
+        <div class="admin-table-row admin-table-head">
+            <div>Слот</div>
+            <div>Ставка</div>
+            <div>Выигрыш</div>
+            <div>Время</div>
+        </div>
         <?php foreach ($latestGames as $game): ?>
-            <div class="card"><?php echo $game['slot']; ?> • <?php echo $game['bet']; ?>₽ → <?php echo $game['win']; ?>₽ • <?php echo $game['created_at']; ?></div>
+            <div class="admin-table-row">
+                <div><?php echo htmlspecialchars($game['slot'], ENT_QUOTES); ?></div>
+                <div><?php echo number_format((float) $game['bet'], 2, '.', ' '); ?>₽</div>
+                <div><?php echo number_format((float) $game['win'], 2, '.', ' '); ?>₽</div>
+                <div class="muted"><?php echo $game['created_at']; ?></div>
+            </div>
         <?php endforeach; ?>
     </div>
-</div>
+</section>
 <?php admin_footer(); ?>

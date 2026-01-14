@@ -58,32 +58,50 @@ foreach ($counts as $count) {
 }
 admin_header('Поддержка');
 ?>
-<div class="section">
-    <h2>Поддержка</h2>
-    <?php if ($message): ?>
-        <p><?php echo $message; ?></p>
-    <?php endif; ?>
-    <div class="profile-tabs">
-        <a class="profile-tab<?php echo $status === 'all' ? ' is-active' : ''; ?>" href="/admin/support.php">Все</a>
-        <a class="profile-tab<?php echo $status === 'open' ? ' is-active' : ''; ?>" href="/admin/support.php?status=open">Открытые (<?php echo $countMap['open']; ?>)</a>
-        <a class="profile-tab<?php echo $status === 'answered' ? ' is-active' : ''; ?>" href="/admin/support.php?status=answered">Отвеченные (<?php echo $countMap['answered']; ?>)</a>
-        <a class="profile-tab<?php echo $status === 'closed' ? ' is-active' : ''; ?>" href="/admin/support.php?status=closed">Закрытые (<?php echo $countMap['closed']; ?>)</a>
+<section class="admin-section">
+    <div class="admin-section-header">
+        <div>
+            <h2>Поддержка</h2>
+            <p class="muted">Отвечайте на тикеты и следите за статусами.</p>
+        </div>
+        <div class="admin-actions">
+            <span class="admin-pill is-info">Открытые: <?php echo $countMap['open']; ?></span>
+            <span class="admin-pill is-success">Отвеченные: <?php echo $countMap['answered']; ?></span>
+            <span class="admin-pill">Закрытые: <?php echo $countMap['closed']; ?></span>
+        </div>
     </div>
-    <div class="cards">
+    <?php if ($message): ?>
+        <div class="admin-alert"><?php echo $message; ?></div>
+    <?php endif; ?>
+    <div class="admin-filters">
+        <a class="admin-filter<?php echo $status === 'all' ? ' is-active' : ''; ?>" href="/admin/support.php">Все</a>
+        <a class="admin-filter<?php echo $status === 'open' ? ' is-active' : ''; ?>" href="/admin/support.php?status=open">Открытые</a>
+        <a class="admin-filter<?php echo $status === 'answered' ? ' is-active' : ''; ?>" href="/admin/support.php?status=answered">Отвеченные</a>
+        <a class="admin-filter<?php echo $status === 'closed' ? ' is-active' : ''; ?>" href="/admin/support.php?status=closed">Закрытые</a>
+    </div>
+    <div class="admin-support-grid">
         <?php foreach ($rows as $row): ?>
-            <div class="card">
-                <strong><?php echo htmlspecialchars($row['subject'], ENT_QUOTES); ?></strong>
+            <div class="card admin-support-card">
+                <div class="admin-support-header">
+                    <div>
+                        <strong><?php echo htmlspecialchars($row['subject'], ENT_QUOTES); ?></strong>
+                        <div class="muted small">#<?php echo $row['id']; ?> • <?php echo $row['email'] ?: 'Гость'; ?></div>
+                    </div>
+                    <span class="admin-pill <?php echo $row['status'] === 'open' ? 'is-info' : ($row['status'] === 'answered' ? 'is-success' : ''); ?>">
+                        <?php echo $row['status']; ?>
+                    </span>
+                </div>
                 <p><?php echo htmlspecialchars($row['message'], ENT_QUOTES); ?></p>
-                <p class="muted small"><?php echo $row['created_at']; ?> • статус: <?php echo $row['status']; ?> • <?php echo $row['email'] ?: 'Гость'; ?></p>
+                <p class="muted small"><?php echo $row['created_at']; ?></p>
                 <?php if ($row['reply_message']): ?>
-                    <div class="card">
+                    <div class="admin-support-reply">
                         <strong>Ответ</strong>
                         <p><?php echo htmlspecialchars($row['reply_message'], ENT_QUOTES); ?></p>
                         <p class="muted small"><?php echo $row['replied_at']; ?></p>
                     </div>
                 <?php endif; ?>
                 <?php if ($row['user_id']): ?>
-                    <form class="form-card" method="post">
+                    <form class="admin-form" method="post">
                         <input type="hidden" name="csrf" value="<?php echo csrf_token(); ?>">
                         <input type="hidden" name="action" value="reply">
                         <input type="hidden" name="ticket_id" value="<?php echo $row['id']; ?>">
@@ -101,5 +119,5 @@ admin_header('Поддержка');
             </div>
         <?php endforeach; ?>
     </div>
-</div>
+</section>
 <?php admin_footer(); ?>
