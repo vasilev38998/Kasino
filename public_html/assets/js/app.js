@@ -847,6 +847,7 @@ minigameButtons.forEach((btn) => {
             };
             ensureSize();
             const updateBoard = () => {
+                ensureSize();
                 const config = buildConfig(getPins(), getDifficulty());
                 const width = canvas?.clientWidth || canvas?.width || 420;
                 const height = canvas?.clientHeight || canvas?.height || 520;
@@ -857,6 +858,9 @@ minigameButtons.forEach((btn) => {
                 drawBoard();
             };
             updateBoard();
+            window.addEventListener('resize', () => {
+                updateBoard();
+            });
             difficultyInputs?.forEach((input) => {
                 input.addEventListener('change', () => {
                     updateBoard();
@@ -922,23 +926,26 @@ minigameButtons.forEach((btn) => {
                     } else {
                         renderSlots(buildConfig(getPins(), getDifficulty()).multipliers);
                     }
-                    let x = (canvas?.clientWidth || canvas.width) / 2;
+                    const width = canvas?.clientWidth || canvas?.width || 420;
+                    const height = canvas?.clientHeight || canvas?.height || 520;
+                    let x = width / 2;
                     let y = 30;
-                    let vx = (Math.random() - 0.5) * 2;
+                    let vx = (Math.random() - 0.5) * 1.4;
                     let vy = 0;
-                    const ballRadius = 10;
+                    const ballRadius = 9;
                     const pegRadius = 6;
-                    const gravity = 0.45;
-                    const bounce = 0.75;
+                    const gravity = 0.42;
+                    const bounce = 0.7;
+                    const friction = 0.985;
                     const targetX = targetSlot?.center ?? x;
                     const animate = () => {
                         if (!ctx || !canvas) return;
                         vy += gravity;
                         x += vx;
                         y += vy;
-                        if (x < ballRadius || x > canvas.width - ballRadius) {
+                        if (x < ballRadius || x > width - ballRadius) {
                             vx *= -0.6;
-                            x = Math.min(Math.max(x, ballRadius), canvas.width - ballRadius);
+                            x = Math.min(Math.max(x, ballRadius), width - ballRadius);
                         }
                         pegLayout.forEach((peg) => {
                             const dx = x - peg.x;
@@ -955,17 +962,19 @@ minigameButtons.forEach((btn) => {
                                 vy -= 2 * dot * ny;
                                 vx *= bounce;
                                 vy *= bounce;
+                                x += nx * 0.5;
                             }
                         });
-                        if (y > canvas.height - 140) {
+                        vx *= friction;
+                        if (y > height - 140) {
                             vx += (targetX - x) * 0.002;
                         }
                         drawBoard();
                         ctx.fillStyle = '#00f0ff';
                         ctx.beginPath();
-                        ctx.arc(x, y, 10, 0, Math.PI * 2);
+                        ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
                         ctx.fill();
-                        if (y < canvas.height - 60) {
+                        if (y < height - 70) {
                             requestAnimationFrame(animate);
                         } else {
                             const multiplier = data.meta?.multiplier ?? 0;
