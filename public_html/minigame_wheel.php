@@ -24,6 +24,10 @@ render_header(t('wheel_title'));
                 <option value="classic">Классика</option>
                 <option value="vip">VIP-режим</option>
             </select>
+            <div class="minigame-note">
+                <strong>Колесо арены</strong>
+                <p>VIP-режим увеличивает диапазон выигрышей и поднимает волатильность.</p>
+            </div>
             <p class="muted"><?php echo t('wheel_hint'); ?></p>
             <button class="btn minigame-play" data-minigame="wheel"><?php echo t('play_now'); ?></button>
         </div>

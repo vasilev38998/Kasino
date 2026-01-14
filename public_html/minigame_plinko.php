@@ -29,15 +29,15 @@ render_header(t('plinko_title'));
                 <div class="plinko-bet-row">
                     <input type="number" name="bet" class="minigame-bet plinko-bet-input" value="<?php echo $minBet; ?>" min="<?php echo $minBet; ?>" max="<?php echo $maxBet; ?>">
                     <div class="plinko-bet-actions">
-                        <button class="btn ghost" type="button">1/2</button>
-                        <button class="btn ghost" type="button">x2</button>
+                        <button class="btn ghost" type="button" data-plinko-action="half">1/2</button>
+                        <button class="btn ghost" type="button" data-plinko-action="double">x2</button>
                     </div>
                 </div>
                 <div class="plinko-quick">
-                    <button class="btn ghost" type="button">+1₽</button>
-                    <button class="btn ghost" type="button">+10₽</button>
-                    <button class="btn ghost" type="button">+100₽</button>
-                    <button class="btn ghost" type="button">ALL</button>
+                    <button class="btn ghost" type="button" data-plinko-add="1">+1₽</button>
+                    <button class="btn ghost" type="button" data-plinko-add="10">+10₽</button>
+                    <button class="btn ghost" type="button" data-plinko-add="100">+100₽</button>
+                    <button class="btn ghost" type="button" data-plinko-action="max">ALL</button>
                 </div>
             </div>
 
@@ -75,6 +75,10 @@ render_header(t('plinko_title'));
 
             <button class="btn plinko-play minigame-play" data-minigame="plinko"><?php echo t('play_now'); ?></button>
             <p class="muted plinko-hint"><?php echo t('plinko_hint'); ?></p>
+            <div class="minigame-note">
+                <strong>Плата за риск</strong>
+                <p>Выбирайте пины и риск: меньше пинов — выше шанс среднего выигрыша, больше — экстремальные множители.</p>
+            </div>
         </div>
 
         <div class="card plinko-board">

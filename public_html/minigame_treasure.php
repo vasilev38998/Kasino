@@ -29,6 +29,10 @@ render_header(t('treasure_title'));
                 <option value="map">Карта сокровищ</option>
                 <option value="relic">Древний артефакт</option>
             </select>
+            <div class="minigame-note">
+                <strong>Поиск реликвий</strong>
+                <p>Карта сокровищ даёт стабильные награды, артефакт — редкие большие выигрыши.</p>
+            </div>
             <p class="muted"><?php echo t('treasure_hint'); ?></p>
             <button class="btn minigame-play" data-minigame="treasure"><?php echo t('play_now'); ?></button>
         </div>

@@ -29,6 +29,10 @@ render_header(t('coin_title'));
                 <option value="classic">Классика x2</option>
                 <option value="boost">Риск x3</option>
             </select>
+            <div class="minigame-note">
+                <strong>Монетный кодекс</strong>
+                <p>Классика — стабильная игра. Риск повышает множитель, но шанс ниже.</p>
+            </div>
             <button class="btn minigame-play" data-minigame="coin"><?php echo t('play_now'); ?></button>
         </div>
     </div>

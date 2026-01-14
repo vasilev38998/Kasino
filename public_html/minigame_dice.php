@@ -37,6 +37,10 @@ render_header(t('dice_title'));
                     <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
                 <?php endfor; ?>
             </select>
+            <div class="minigame-note">
+                <strong>Кости мастера</strong>
+                <p>Точная грань даёт максимум, а двойной выбор снижает риск.</p>
+            </div>
             <button class="btn minigame-play" data-minigame="dice"><?php echo t('play_now'); ?></button>
         </div>
     </div>

@@ -36,6 +36,10 @@ render_header(t('highlow_title'));
                 <option value="safe">Безопасно x1.7</option>
                 <option value="risk">Риск x2.4</option>
             </select>
+            <div class="minigame-note">
+                <strong>Высоко/Низко</strong>
+                <p>Безопасный режим возвращает ставку на «7», риск — только победа или проигрыш.</p>
+            </div>
             <button class="btn minigame-play" data-minigame="highlow"><?php echo t('play_now'); ?></button>
         </div>
     </div>

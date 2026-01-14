@@ -306,43 +306,63 @@ if ($multiplier <= 0) {
     $winCells = [];
 }
 
-switch ($slotConfig['type']) {
-    case 'cascade':
-        if ($scatterCount >= 3) {
-            $feature = 'free_spins';
-            $multiplier += 1.1;
-        }
-        break;
-    case 'sticky':
-        if ($scatterCount >= 2) {
-            $feature = 'sticky_wilds';
-            $multiplier += 0.7;
-        }
-        break;
-    case 'scatter':
-        if ($scatterCount >= 3) {
-            $feature = 'sky_multiplier';
-            $multiplier += random_int(8, 18) / 10;
-        }
-        break;
-    case 'cluster':
-        if ($bestCount >= 12) {
-            $feature = 'cluster_burst';
-            $multiplier += 0.8;
-        }
-        break;
-    case 'burst':
-        if ($scatterCount >= 3) {
-            $feature = 'gem_storm';
-            $multiplier += 1.0;
-        }
-        break;
-    case 'orbit':
-        if ($scatterCount >= 3) {
-            $feature = 'orbit_bonus';
-            $multiplier += 0.9;
-        }
-        break;
+$featureTrigger = $slotConfig['feature_trigger'] ?? null;
+$featureThreshold = (int) ($slotConfig['feature_threshold'] ?? 0);
+$featureMin = (float) ($slotConfig['feature_bonus_min'] ?? 0);
+$featureMax = (float) ($slotConfig['feature_bonus_max'] ?? $featureMin);
+if ($featureTrigger) {
+    $triggered = false;
+    if ($featureTrigger === 'scatter') {
+        $triggered = $scatterCount >= $featureThreshold;
+    } elseif ($featureTrigger === 'best_count') {
+        $triggered = $bestCount >= $featureThreshold;
+    }
+    if ($triggered && $featureMax > 0) {
+        $feature = $slotConfig['feature_tag'] ?? $feature;
+        $minStep = (int) round($featureMin * 10);
+        $maxStep = (int) round($featureMax * 10);
+        $bonus = random_int(min($minStep, $maxStep), max($minStep, $maxStep)) / 10;
+        $multiplier += $bonus;
+    }
+} else {
+    switch ($slotConfig['type']) {
+        case 'cascade':
+            if ($scatterCount >= 3) {
+                $feature = 'free_spins';
+                $multiplier += 1.1;
+            }
+            break;
+        case 'sticky':
+            if ($scatterCount >= 2) {
+                $feature = 'sticky_wilds';
+                $multiplier += 0.7;
+            }
+            break;
+        case 'scatter':
+            if ($scatterCount >= 3) {
+                $feature = 'sky_multiplier';
+                $multiplier += random_int(8, 18) / 10;
+            }
+            break;
+        case 'cluster':
+            if ($bestCount >= 12) {
+                $feature = 'cluster_burst';
+                $multiplier += 0.8;
+            }
+            break;
+        case 'burst':
+            if ($scatterCount >= 3) {
+                $feature = 'gem_storm';
+                $multiplier += 1.0;
+            }
+            break;
+        case 'orbit':
+            if ($scatterCount >= 3) {
+                $feature = 'orbit_bonus';
+                $multiplier += 0.9;
+            }
+            break;
+    }
 }
 $win = round($bet * $multiplier, 2);
 $newBalance = $balance - $bet + $win;

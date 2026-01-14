@@ -816,6 +816,39 @@ minigameButtons.forEach((btn) => {
                     updateBoard();
                 });
             });
+            const betInputPlinko = wrapper?.querySelector('.plinko-bet-input');
+            const betActions = wrapper?.querySelectorAll('[data-plinko-action]');
+            const betAdds = wrapper?.querySelectorAll('[data-plinko-add]');
+            const clampBet = (value) => {
+                if (!betInputPlinko) return value;
+                const min = Number(betInputPlinko.min || 0);
+                const max = Number(betInputPlinko.max || value);
+                return Math.min(Math.max(value, min), max);
+            };
+            betActions?.forEach((actionBtn) => {
+                actionBtn.addEventListener('click', () => {
+                    if (!betInputPlinko) return;
+                    const current = Number(betInputPlinko.value || 0);
+                    const action = actionBtn.dataset.plinkoAction;
+                    if (action === 'half') {
+                        betInputPlinko.value = String(clampBet(Math.floor(current / 2)));
+                    }
+                    if (action === 'double') {
+                        betInputPlinko.value = String(clampBet(current * 2));
+                    }
+                    if (action === 'max') {
+                        betInputPlinko.value = String(clampBet(Number(betInputPlinko.max || current)));
+                    }
+                });
+            });
+            betAdds?.forEach((addBtn) => {
+                addBtn.addEventListener('click', () => {
+                    if (!betInputPlinko) return;
+                    const add = Number(addBtn.dataset.plinkoAdd || 0);
+                    const current = Number(betInputPlinko.value || 0);
+                    betInputPlinko.value = String(clampBet(current + add));
+                });
+            });
             fetch('/api/minigames.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

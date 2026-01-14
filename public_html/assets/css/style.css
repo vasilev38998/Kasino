@@ -445,6 +445,21 @@ a {
     gap: 12px;
 }
 
+.minigame-note {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.minigame-note strong {
+    display: block;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
 .coin-panel {
     display: flex;
     flex-direction: column;
